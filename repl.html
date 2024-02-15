@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REPL POC</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        textarea {
+            flex: 1;
+            resize: none;
+            padding: 10px;
+        }
+
+        #textarea1 {
+            border-right: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button onclick="run()">run code</button>
+        <textarea id="textarea1" placeholder="Textarea 1"></textarea>
+        <textarea id="textarea2" placeholder="Textarea 2"></textarea>
+    </div>
+</body>
+<script>
+  function run() {
+    const script = document.getElementById('textarea1').value;
+    const output = eval(script);
+    console.log({output});
+    const out = document.getElementById('textarea2');
+    out.value = out.value + '\n' + output;
+  }
+
+</script>
+</html>
