@@ -1,12 +1,12 @@
 import React from 'react';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
-import { SelectAJam } from './views/SelectAJam';
-import { JamLookup } from './views/JamLookup';
 import {
   ChakraProvider,
   extendBaseTheme,
   theme as chakraTheme,
 } from '@chakra-ui/react';
+import { Draff } from './views/Draff';
+import { RandomDraff } from './views/RandomDraff';
 
 // Chakra base theme: https://chakra-ui.com/getting-started#chakrabaseprovider
 const { Button, Tabs, Input, Container, Card, Modal, Heading, Alert } =
@@ -28,11 +28,15 @@ const theme = extendBaseTheme({
 const router = createBrowserRouter([
   {
     path: '/',
-    element: (
-      <div>
-        Home page
-      </div>
-    ),
+    element: <div>Home page</div>,
+  },
+  {
+    path: '/js',
+    element: <RandomDraff />,
+  },
+  {
+    path: '/js/:id',
+    element: <Draff />,
   },
 ]);
 
