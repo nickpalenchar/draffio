@@ -7,7 +7,7 @@ import { Text } from '@chakra-ui/react';
 import { SafeEvalResult } from './safeEval';
 
 export const syntaxify = (
-  input: string | SafeEvalResult,
+  input: any | SafeEvalResult,
 ): string | React.JSX.Element => {
   if (typeof input === 'string') {
     return (
@@ -22,6 +22,13 @@ export const syntaxify = (
     return (
       <Text className="syntax-number" as="span" color="blue.200">
         {input}
+      </Text>
+    );
+  }
+  if (typeof input === 'boolean') {
+    return (
+      <Text className="syntax-boolean" as="span" color="green.300">
+        {input.toString()}
       </Text>
     );
   }
@@ -45,5 +52,6 @@ export const syntaxify = (
   if (input.type === 'error') {
     return <Text color={'red'}>{input.error}</Text>;
   }
+  // TODO object
   return 'unknown';
 };
