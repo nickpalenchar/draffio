@@ -3,6 +3,7 @@ import { Flex, Center, Box, Stack } from '@chakra-ui/react';
 import { EditorView, basicSetup } from 'codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { gutter } from '@codemirror/gutter';
+import { Terminal } from '../components/Terminal';
 
 export const Draff = () => {
   const editorRef = useRef<HTMLDivElement>(null);
@@ -30,16 +31,7 @@ export const Draff = () => {
         <Box minWidth="50%" bg="teal.50" ref={editorRef}>
           <Box margin={'1.5em'} ref={editorRef} />
         </Box>
-        <Box
-          paddingLeft="1.2em"
-          paddingTop="0.5em"
-          paddingRight="1.2em"
-          fontFamily={'monospace'}
-          fontWeight={'bold'}
-          color="white"
-        >
-          textedit 2
-        </Box>
+        <Terminal />
       </Flex>
     </Stack>
   );
