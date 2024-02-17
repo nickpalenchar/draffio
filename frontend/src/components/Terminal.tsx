@@ -1,6 +1,7 @@
 import React, { useState, ChangeEvent } from 'react';
 import { Box, Input, InputGroup, InputLeftElement } from '@chakra-ui/react';
 import { safeEval } from '../util/safeEval';
+import { syntaxify } from '../util/syntaxify';
 
 const terminalStyle: React.CSSProperties = {
   cursor: 'text',
@@ -20,7 +21,7 @@ const inputStyle: React.CSSProperties = {
 };
 
 export const Terminal = () => {
-  const [lines, setLines] = useState<string[]>([
+  const [lines, setLines] = useState<(string | React.JSX.Element)[]>([
     'Draff JS v0.1',
     '   "Hello everyone!"',
   ]);
@@ -38,9 +39,10 @@ export const Terminal = () => {
     setInputVal(event.target.value);
   };
 
-  const processLine = (input: string) => {
-    const output = safeEval(input);
-    setLines([...lines, '> ' + input, output]);
+  const processLine = async (input: string) => {
+    const output = syntaxify(await safeEval(input));
+    console.log({ output });
+    setLines([...lines, '> ' + (input as unknown as string), output]);
   };
 
   return (
