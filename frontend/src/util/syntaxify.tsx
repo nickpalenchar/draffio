@@ -5,7 +5,7 @@ import React from 'react';
 import { Tag, TagLabel, TagRightIcon, Text } from '@chakra-ui/react';
 
 import { EvalResultType, SafeEvalResult } from './safeEval';
-import { InfoIcon } from '@chakra-ui/icons';
+import { InfoIcon, WarningIcon, WarningTwoIcon } from '@chakra-ui/icons';
 
 const Meta = ({ children }: { children: any }) => (
   <Text as="span" color="gray.400" fontWeight={'400'} fontStyle={'italic'}>
@@ -88,6 +88,17 @@ export const syntaxify = (
       return input;
     }
     if (input[EvalResultType] === 'console') {
+      console.log('level???', input.level);
+      const levels = {
+        log: ['gray.500', <InfoIcon color="gray.700" marginRight="4px" />],
+        warn: [
+          'yellow.500',
+          <WarningTwoIcon color="yellow.700" marginRight="4px" />,
+        ],
+        error: ['red.500', <WarningIcon color="red.900" marginRight="4px" />],
+      };
+      console.log(levels[input.level as 'log']);
+      const [tagColor, icon] = levels[input.level as 'log'];
       return (
         <Text className="syntax-console" as="span">
           <Tag
@@ -95,11 +106,9 @@ export const syntaxify = (
             paddingRight="4px"
             marginRight="8px"
             marginBottom="-10px"
-            backgroundColor="gray.500"
+            backgroundColor={tagColor as string}
           >
-            <TagRightIcon>
-              <InfoIcon color="gray.700" marginRight="4px" />
-            </TagRightIcon>
+            <TagRightIcon>{icon}</TagRightIcon>
             <TagLabel>log</TagLabel>
           </Tag>
           <Meta>{syntaxify(input.line, { color: 'gray.300' }) as string}</Meta>
