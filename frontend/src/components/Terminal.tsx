@@ -1,5 +1,5 @@
-import React, { useState, ChangeEvent } from 'react';
-import { Box, Input, InputGroup, InputLeftElement } from '@chakra-ui/react';
+import React, { useState } from 'react';
+import { Box } from '@chakra-ui/react';
 import { safeEval } from '../util/safeEval';
 import { syntaxify } from '../util/syntaxify';
 
@@ -13,11 +13,9 @@ const inputStyle: React.CSSProperties = {
   paddingLeft: '2px',
   outline: 'none',
   border: 'none',
-  WebkitUserModify: 'read-write-plaintext-only', // For Safari
-  /* Add your custom styling properties here */
+  WebkitUserModify: 'read-write-plaintext-only',
   padding: '1px',
   backgroundColor: 'rgba(0,0,0,0)',
-  // border: '1px solid #ccc',
 };
 
 export const Terminal = () => {
