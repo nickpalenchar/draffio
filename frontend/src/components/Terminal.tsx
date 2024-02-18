@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Text } from '@chakra-ui/react';
-import { EvalResultType, safeEval } from '../util/safeEval';
+import { ConsoleFn, EvalResultType, safeEval } from '../util/safeEval';
 import { syntaxify } from '../util/syntaxify';
 
 const terminalStyle: React.CSSProperties = {
@@ -56,7 +56,13 @@ export const Terminal = () => {
   };
 
   const processLine = async (input: string) => {
-    const output = syntaxify(await safeEval(input));
+    const logLines: any[] = [];
+    const consoleFn: ConsoleFn = (level, args) => {
+      console.log('GETOTUHETOUHETOUHO', args[0]);
+      logLines.push(...args.map(syntaxify));
+    };
+    const output = syntaxify(await safeEval(input, { consoleFn }));
+
     console.log({ output });
     if (
       typeof output === 'object' &&
@@ -76,6 +82,7 @@ export const Terminal = () => {
     } else {
       setLines([
         ...lines,
+        ...logLines,
         '> ' + (input as unknown as string),
         output as string,
       ]);

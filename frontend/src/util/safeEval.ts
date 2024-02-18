@@ -11,6 +11,13 @@ export class BlockedBySandbox extends Error {
     this.message = 'Action blocked';
   }
 }
+type ConsoleLevels = 'log' | 'warn' | 'error';
+export type ConsoleFn = (level: ConsoleLevels, args: any[]) => void;
+interface SafeEvalOptions {
+  consoleFn?: ConsoleFn;
+}
+
+
 const scope: string[] = [];
 
 const _safeWrap = (input: string) => {
@@ -20,18 +27,35 @@ const _safeWrap = (input: string) => {
   return input;
 };
 
-export const safeEval = async (input: string): Promise<SafeEvalResult> => {
+export const safeEval = async (
+  input: string,
+  { consoleFn }: SafeEvalOptions = {},
+): Promise<SafeEvalResult> => {
   const blob = new Blob(
     [
       `
   onmessage = function(e) {
-    return ((document) => {
-      // special events
-      console.log('DATA', e.data);
+    console.log('DATA', e.data);
+    let $$$consoleOn = true;
+    const $$$shadowConsole = {
+      log(...args) {
+        $$$consoleOn && postMessage({ type: 'console', console: args, level: 'log' })
+      },
+      warn(...args) {
+        $$$consoleOn && postMessage({ type: 'console', console: args, level: 'warn' })
+      },
+      error(...args) {
+        $$$consoleOn && postMessage({ type: 'console', console: args, level: 'error' })
+      },
+    }
+    const $$$setConsole = (state) => $$$consoleOn = state;
+    
+    console.log({ codeToRun: e.data });
 
+    return ((document, console) => {
+      // special events
       try {
-        const codeToRun =  e.data;
-        console.log({ codeToRun });
+        const codeToRun = e.data;
         const result = eval(codeToRun);
         postMessage({ type: 'result', result });
       } catch (error) {
@@ -41,7 +65,7 @@ export const safeEval = async (input: string): Promise<SafeEvalResult> => {
           postMessage({ type: 'error', error: error?.message || error.toString() });
         }
       }
-    })()
+    })(undefined, $$$shadowConsole)
   };
 `,
     ],
@@ -50,11 +74,18 @@ export const safeEval = async (input: string): Promise<SafeEvalResult> => {
 
   const worker = new Worker(URL.createObjectURL(blob));
 
-  const executeCodeInWorker = (code: string): Promise<string> => {
+  const executeCodeInWorker = (
+    code: string,
+    { consoleFn }: SafeEvalOptions = {},
+  ): Promise<string> => {
     return new Promise((resolve, reject) => {
       // Handle messages from the worker
       worker.onmessage = (event) => {
+        console.log('EVENT', event);
         const message = event.data;
+        if (message.type === 'console') {
+          return consoleFn?.(message.level, message.console);
+        }
         if (message.type === 'result') {
           resolve(message.result);
         } else if (message.type === 'error') {
@@ -100,11 +131,12 @@ export const safeEval = async (input: string): Promise<SafeEvalResult> => {
       return { [EvalResultType]: 'event', event: 'HELP' };
     }
 
+    const pastCode = ['$$$setConsole(false)', ...scope.slice(0, -1), '$$$setConsole(true)']
+
     const wrapped = _safeWrap(input);
-    // scope.push(_safeWrap(input));
     const mutedResult = await _mute(wrapped);
     const result = await executeCodeInWorker(
-      scope.join(';\n') + `;\n${wrapped}`,
+      pastCode.join(';\n') + `;\n${wrapped}`, { consoleFn }
     );
 
     scope.push(mutedResult);
