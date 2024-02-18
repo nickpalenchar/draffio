@@ -4,7 +4,7 @@
 import React from 'react';
 import { Text } from '@chakra-ui/react';
 
-import { SafeEvalResult } from './safeEval';
+import { EvalResultType, SafeEvalResult } from './safeEval';
 
 const Meta = ({ children }: { children: any }) => (
   <Text as="span" color="gray.400" fontWeight={'400'} fontStyle={'italic'}>
@@ -14,7 +14,10 @@ const Meta = ({ children }: { children: any }) => (
 
 export const syntaxify = (
   input: any | SafeEvalResult,
-): string | React.JSX.Element => {
+):
+  | string
+  | React.JSX.Element
+  | { [EvalResultType]: 'event'; event: string } => {
   console.log('parsing input', input);
   if (input === undefined) {
     return <Meta>undefined</Meta>;
@@ -51,7 +54,9 @@ export const syntaxify = (
         [
         {input.map((out, i, arr) => (
           <>
-            <Text as="span">{syntaxify(out)}</Text>
+            <Text as="span">
+              {syntaxify(out) as string | React.JSX.Element}
+            </Text>
             {i < arr.length - 1 && ', '}
           </>
         ))}
@@ -69,12 +74,19 @@ export const syntaxify = (
   }
 
   // parsing from postMessage
-  if (input.type === 'result') {
-    return syntaxify(input.result);
+  if (EvalResultType in input) {
+    if (input[EvalResultType] === 'result') {
+      return syntaxify(input.result);
+    }
+    if (input[EvalResultType] === 'error') {
+      return <Text color={'red'}>{input.error}</Text>;
+    }
+    if (input[EvalResultType] === 'event') {
+      // gets handled further up the callstack.
+      return input;
+    }
   }
-  if (input.type === 'error') {
-    return <Text color={'red'}>{input.error}</Text>;
-  }
+
   // TODO object
   if (input instanceof Object) {
     return (
@@ -87,7 +99,7 @@ export const syntaxify = (
                 {key}:{' '}
               </Text>
               <Text as="span" className="syntax-object-value">
-                {syntaxify(value)}
+                {syntaxify(value) as string | React.JSX.Element}
                 {i < arr.length - 1 && ', '}
               </Text>
             </>

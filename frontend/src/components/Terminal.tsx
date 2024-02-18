@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Box } from '@chakra-ui/react';
-import { safeEval } from '../util/safeEval';
+import { EvalResultType, safeEval } from '../util/safeEval';
 import { syntaxify } from '../util/syntaxify';
 
 const terminalStyle: React.CSSProperties = {
@@ -16,10 +16,18 @@ const inputStyle: React.CSSProperties = {
   WebkitUserModify: 'read-write-plaintext-only',
   padding: '1px',
   backgroundColor: 'rgba(0,0,0,0)',
+
+  WebkitOverflowScrolling: 'touch',
+  scrollbarWidth: 'thin',
+  scrollbarColor: 'transparent transparent',
+  msOverflowStyle: 'none',
+  msScrollbarFaceColor: 'transparent', // t
+  msScrollbarTrackColor: 'transparent', // track color (Chrome, Safari)
 };
 
 export const Terminal = () => {
   const inputRef = useRef<HTMLInputElement>(null);
+  const [innerHeight, setInnerHeight] = useState<number | null>(null);
   const [lines, setLines] = useState<(string | React.JSX.Element)[]>([
     ...`         ,"-.
          ||~'    Draff JS REPL v0.1
@@ -50,8 +58,26 @@ export const Terminal = () => {
   const processLine = async (input: string) => {
     const output = syntaxify(await safeEval(input));
     console.log({ output });
-    setLines([...lines, '> ' + (input as unknown as string), output]);
+    if (
+      typeof output === 'object' &&
+      output.hasOwnProperty(EvalResultType) &&
+      'event' in output
+    ) {
+      if (output.event === 'CLEAR') {
+        setLines([]);
+      }
+    } else {
+      setLines([
+        ...lines,
+        '> ' + (input as unknown as string),
+        output as string,
+      ]);
+    }
   };
+
+  useEffect(() => {
+    setInnerHeight(window.innerHeight);
+  }, []);
 
   return (
     <Box
@@ -66,6 +92,7 @@ export const Terminal = () => {
       style={terminalStyle}
       overflowY={'scroll'}
       maxWidth="100%"
+      height={innerHeight ? Math.round(innerHeight * 0.8) + 'px' : '80%'}
       onClick={handleTerminalClick}
     >
       {lines.map((line, i) => (
