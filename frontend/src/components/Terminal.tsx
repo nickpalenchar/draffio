@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Box } from '@chakra-ui/react';
 import { safeEval } from '../util/safeEval';
 import { syntaxify } from '../util/syntaxify';
@@ -19,15 +19,25 @@ const inputStyle: React.CSSProperties = {
 };
 
 export const Terminal = () => {
+  const inputRef = useRef<HTMLInputElement>(null);
   const [lines, setLines] = useState<(string | React.JSX.Element)[]>([
-    'Draff JS v0.1',
-    '   "Hello everyone!"',
+    ...`         ,"-.
+         ||~'    Draff JS REPL v0.1
+      ___||         copyright (c) 2024 draff.io
+     ,(.:')
+      || ||
+      ^^ ^^
+      `.split('\n'),
   ]);
   const [inputVal, setInputVal] = useState<string>('');
 
+  const handleTerminalClick = () => {
+    if (inputRef.current) {
+      inputRef.current.focus();
+    }
+  };
   const handleOnKeyDown = (event: any) => {
     if (event.key === 'Enter') {
-      console.log('goti t', event.target.value);
       processLine(event.target.value);
       setInputVal('');
       return;
@@ -52,18 +62,26 @@ export const Terminal = () => {
       fontSize="13px"
       fontWeight={'bold'}
       color="white"
+      width="100%"
       style={terminalStyle}
+      onClick={handleTerminalClick}
     >
       {lines.map((line, i) => (
-        <div key={i.toString()}>{line}</div>
+        <pre key={i.toString()}>{line}</pre>
       ))}
       <div>
         {'>'}{' '}
         <input
+          ref={inputRef}
           style={inputStyle}
           value={inputVal}
           onChange={handleOnChange}
           onKeyDown={handleOnKeyDown}
+          autoCapitalize="off"
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck="false"
+          type="text"
         />
       </div>
     </Box>

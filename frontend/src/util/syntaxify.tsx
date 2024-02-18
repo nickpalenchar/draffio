@@ -6,9 +6,22 @@ import { Text } from '@chakra-ui/react';
 
 import { SafeEvalResult } from './safeEval';
 
+const Meta = ({ children }: { children: any }) => (
+  <Text as="span" color="gray.400" fontWeight={'400'} fontStyle={'italic'}>
+    {children}
+  </Text>
+);
+
 export const syntaxify = (
   input: any | SafeEvalResult,
 ): string | React.JSX.Element => {
+  console.log('parsing input', input);
+  if (input === undefined) {
+    return <Meta>undefined</Meta>;
+  }
+  if (input === null) {
+    return <Meta>null</Meta>;
+  }
   if (typeof input === 'string') {
     return (
       <Text
@@ -46,6 +59,16 @@ export const syntaxify = (
       </Text>
     );
   }
+  if (input instanceof Date) {
+    return (
+      <Text as="span" className="syntax-date">
+        <Meta>[Date] </Meta>
+        {input.toJSON()}
+      </Text>
+    );
+  }
+
+  // parsing from postMessage
   if (input.type === 'result') {
     return syntaxify(input.result);
   }
@@ -53,5 +76,29 @@ export const syntaxify = (
     return <Text color={'red'}>{input.error}</Text>;
   }
   // TODO object
-  return 'unknown';
+  if (input instanceof Object) {
+    const els: any[] = [];
+    return (
+      <Text as="span" className="syntax-object">
+        {Object.entries(input).map(([key, value], i, arr) => {
+          return (
+            <>
+              <Text as="span" className="syntax-object-key">
+                {key}:{' '}
+              </Text>
+              <Text as="span" className="syntax-object-value">
+                {syntaxify(value)}
+                {i <= arr.length - 1 && ','}
+              </Text>
+            </>
+          );
+        })}
+      </Text>
+    );
+  }
+  return (
+    <Text as="span" className="syntax-unknown">
+      {input.toString()}
+    </Text>
+  );
 };
