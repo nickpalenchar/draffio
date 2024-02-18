@@ -9,7 +9,7 @@ const terminalStyle: React.CSSProperties = {
 
 const inputStyle: React.CSSProperties = {
   fontWeight: 'bold',
-  minWidth: '40px',
+  width: '90%',
   paddingLeft: '2px',
   outline: 'none',
   border: 'none',
@@ -30,7 +30,7 @@ export const Terminal = () => {
   const [innerHeight, setInnerHeight] = useState<number | null>(null);
   const [lines, setLines] = useState<(string | React.JSX.Element)[]>([
     ...`         ,"-.
-         ||~'    Draff JS REPL v0.1
+         ||~'    Draff JS REPL v0.1 (preview)
       ___||         copyright (c) 2024 draff.io
      ,(.:')
       || ||
