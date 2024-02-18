@@ -30,12 +30,18 @@ export const safeEval = async (input: string): Promise<SafeEvalResult> => {
     [
       `
   onmessage = function(e) {
-    try {
-      const result = eval(e.data);
-      postMessage({ type: 'result', result });
-    } catch (error) {
-      postMessage({ type: 'error', error: error.toString() });
-    }
+    return ((document) => {
+      try {
+        const result = eval(e.data);
+        postMessage({ type: 'result', result });
+      } catch (error) {
+        if (error?.name === 'DataCloneError') {
+          postMessage({type: 'error', error: 'Blocked action.'});
+        } else {
+          postMessage({ type: 'error', error: error.toString() });
+        }
+      }
+    })()
   };
 `,
     ],
