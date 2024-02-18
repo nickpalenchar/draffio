@@ -30,7 +30,9 @@ const _mute = (input: string) => {
     trimmed.startsWith('var') ||
     trimmed.startsWith('function') ||
     trimmed.startsWith('undefined') ||
-    trimmed.startsWith('void')
+    trimmed.startsWith('void') ||
+    trimmed.startsWith(';') ||
+    !trimmed
   ) {
     return input;
   }
@@ -48,13 +50,12 @@ export const safeEval = async (input: string): Promise<SafeEvalResult> => {
         const codeToRun =  e.data;
         console.log({ codeToRun });
         const result = eval(codeToRun);
-        console.log('');
         postMessage({ type: 'result', result });
       } catch (error) {
         if (error?.name === 'DataCloneError') {
           postMessage({type: 'error', error: 'Blocked action.'});
         } else {
-          postMessage({ type: 'error', error: error.toString() });
+          postMessage({ type: 'error', error: error?.message || error.toString() });
         }
       }
     })()

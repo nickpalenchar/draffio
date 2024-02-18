@@ -77,9 +77,9 @@ export const syntaxify = (
   }
   // TODO object
   if (input instanceof Object) {
-    const els: any[] = [];
     return (
       <Text as="span" className="syntax-object">
+        {'{ '}
         {Object.entries(input).map(([key, value], i, arr) => {
           return (
             <>
@@ -88,11 +88,12 @@ export const syntaxify = (
               </Text>
               <Text as="span" className="syntax-object-value">
                 {syntaxify(value)}
-                {i <= arr.length - 1 && ','}
+                {i < arr.length - 1 && ', '}
               </Text>
             </>
           );
         })}
+        {' }'}
       </Text>
     );
   }

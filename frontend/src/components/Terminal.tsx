@@ -64,6 +64,8 @@ export const Terminal = () => {
       color="white"
       width="100%"
       style={terminalStyle}
+      overflowY={'scroll'}
+      maxWidth="100%"
       onClick={handleTerminalClick}
     >
       {lines.map((line, i) => (
