@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Box } from '@chakra-ui/react';
+import { Box, Text } from '@chakra-ui/react';
 import { EvalResultType, safeEval } from '../util/safeEval';
 import { syntaxify } from '../util/syntaxify';
 
@@ -65,6 +65,13 @@ export const Terminal = () => {
     ) {
       if (output.event === 'CLEAR') {
         setLines([]);
+      } else if (output.event === 'HELP') {
+        setLines([
+          ...lines,
+          <Text color="blue.300" fontStyle={'italic'}>
+            {'Help Commands:\n  .help - show this\n  .clear - clear the screen'}
+          </Text>,
+        ]);
       }
     } else {
       setLines([

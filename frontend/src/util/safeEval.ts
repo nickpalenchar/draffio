@@ -3,7 +3,7 @@ export const EvalResultType = Symbol();
 export type SafeEvalResult =
   | { [EvalResultType]: 'result'; result: string }
   | { [EvalResultType]: 'error'; error: string }
-  | { [EvalResultType]: 'event'; event: 'CLEAR' }
+  | { [EvalResultType]: 'event'; event: 'CLEAR' | 'HELP' }
 export class BlockedBySandbox extends Error {
   constructor() {
     super();
@@ -18,25 +18,6 @@ const _safeWrap = (input: string) => {
     return `(${input})`;
   }
   return input;
-};
-/** silences (voids) statement so it doesn't return something, if applicable */
-const _mute = (input: string) => {
-  console.log('muting', { input });
-  const trimmed = input.trim();
-  if (
-    trimmed.startsWith('let') ||
-    trimmed.startsWith('const') ||
-    trimmed.startsWith('var') ||
-    trimmed.startsWith('function') ||
-    trimmed.startsWith('undefined') ||
-    trimmed.startsWith('void') ||
-    trimmed.startsWith(';') ||
-    !trimmed
-  ) {
-    return input;
-  }
-
-  return `void ${input}`;
 };
 
 export const safeEval = async (input: string): Promise<SafeEvalResult> => {
@@ -84,21 +65,50 @@ export const safeEval = async (input: string): Promise<SafeEvalResult> => {
       worker.postMessage(code);
     });
   };
-  try {
 
+  /** silences (voids) statement so it doesn't return something, if applicable */
+const _mute = async (input: string) => {
+  console.log('muting', { input });
+  const trimmed = input.trim();
+  if (
+    trimmed.startsWith('let') ||
+    trimmed.startsWith('const') ||
+    trimmed.startsWith('var') ||
+    trimmed.startsWith('function') ||
+    trimmed.startsWith('undefined') ||
+    trimmed.startsWith('void') ||
+    trimmed.startsWith(';') ||
+    !trimmed
+  ) {
+    return input;
+  }
+  try {
+    await executeCodeInWorker(`void ${input}`);
+      return `void ${input}`;
+  } catch {
+    return input;
+  }
+};
+
+
+  /// code execution ///
+  try {
     // detect clear event
     if (input.startsWith('.clear') || input.startsWith('clear()')) {
       return { [EvalResultType]: 'event', event: 'CLEAR' }
-
+    }
+    if (input.startsWith('.help')) {
+      return { [EvalResultType]: 'event', event: 'HELP'}
     }
 
     const wrapped = _safeWrap(input);
     // scope.push(_safeWrap(input));
+    const mutedResult = await _mute(wrapped);
     const result = await executeCodeInWorker(
       scope.join(';\n') + `;\n${wrapped}`,
     );
 
-    scope.push(_mute(wrapped));
+    scope.push(mutedResult);
     return { [EvalResultType]: 'result', result };
   } catch (e: any) {
     return { [EvalResultType]: 'error', error: e.toString() };
