@@ -58,8 +58,12 @@ export const Terminal = () => {
   const processLine = async (input: string) => {
     const logLines: any[] = [];
     const consoleFn: ConsoleFn = (level, args) => {
-      console.log('GETOTUHETOUHETOUHO', args[0]);
-      logLines.push(...args.map(syntaxify));
+      logLines.push(
+        ...args.map((line) =>
+          syntaxify({ [EvalResultType]: 'console', level, line }),
+        ),
+      );
+      setLines([...lines, ...logLines]);
     };
     const output = syntaxify(await safeEval(input, { consoleFn }));
 
@@ -82,8 +86,8 @@ export const Terminal = () => {
     } else {
       setLines([
         ...lines,
-        ...logLines,
         '> ' + (input as unknown as string),
+        ...logLines,
         output as string,
       ]);
     }

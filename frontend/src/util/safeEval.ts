@@ -131,7 +131,7 @@ export const safeEval = async (
       return { [EvalResultType]: 'event', event: 'HELP' };
     }
 
-    const pastCode = ['$$$setConsole(false)', ...scope.slice(0, -1), '$$$setConsole(true)']
+    const pastCode = ['$$$setConsole(false)', ...scope, '$$$setConsole(true)']
 
     const wrapped = _safeWrap(input);
     const mutedResult = await _mute(wrapped);

@@ -9,7 +9,7 @@ import { Draff } from './views/Draff';
 import { RandomDraff } from './views/RandomDraff';
 
 // Chakra base theme: https://chakra-ui.com/getting-started#chakrabaseprovider
-const { Button, Tabs, Input, Container, Card, Modal, Heading, Alert } =
+const { Button, Tabs, Input, Container, Card, Modal, Heading, Alert, Tag } =
   chakraTheme.components;
 const theme = extendBaseTheme({
   components: {
@@ -21,6 +21,7 @@ const theme = extendBaseTheme({
     Modal,
     Heading,
     Alert,
+    Tag,
   },
 });
 

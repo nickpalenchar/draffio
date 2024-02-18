@@ -2,9 +2,10 @@
  * to be rendered. The use case is adding some UI to Terminal compnent.
  */
 import React from 'react';
-import { Text } from '@chakra-ui/react';
+import { Tag, TagLabel, TagRightIcon, Text } from '@chakra-ui/react';
 
 import { EvalResultType, SafeEvalResult } from './safeEval';
+import { InfoIcon } from '@chakra-ui/icons';
 
 const Meta = ({ children }: { children: any }) => (
   <Text as="span" color="gray.400" fontWeight={'400'} fontStyle={'italic'}>
@@ -14,6 +15,7 @@ const Meta = ({ children }: { children: any }) => (
 
 export const syntaxify = (
   input: any | SafeEvalResult,
+  { color }: { color?: string } = {},
 ):
   | string
   | React.JSX.Element
@@ -30,20 +32,20 @@ export const syntaxify = (
       <Text
         className="syntax-string"
         as="span"
-        color="yellow.200"
+        color={color || 'yellow.200'}
       >{`"${input.replace('"', '\\"')}"`}</Text>
     );
   }
   if (typeof input === 'number') {
     return (
-      <Text className="syntax-number" as="span" color="blue.200">
+      <Text className="syntax-number" as="span" color={color || 'blue.200'}>
         {input}
       </Text>
     );
   }
   if (typeof input === 'boolean') {
     return (
-      <Text className="syntax-boolean" as="span" color="green.300">
+      <Text className="syntax-boolean" as="span" color={color || 'green.300'}>
         {input.toString()}
       </Text>
     );
@@ -55,7 +57,7 @@ export const syntaxify = (
         {input.map((out, i, arr) => (
           <>
             <Text as="span">
-              {syntaxify(out) as string | React.JSX.Element}
+              {syntaxify(out, { color }) as string | React.JSX.Element}
             </Text>
             {i < arr.length - 1 && ', '}
           </>
@@ -76,7 +78,7 @@ export const syntaxify = (
   // parsing from postMessage
   if (EvalResultType in input) {
     if (input[EvalResultType] === 'result') {
-      return syntaxify(input.result);
+      return syntaxify(input.result, { color });
     }
     if (input[EvalResultType] === 'error') {
       return <Text color={'red'}>{input.error}</Text>;
@@ -84,6 +86,25 @@ export const syntaxify = (
     if (input[EvalResultType] === 'event') {
       // gets handled further up the callstack.
       return input;
+    }
+    if (input[EvalResultType] === 'console') {
+      return (
+        <Text className="syntax-console" as="span">
+          <Tag
+            size="xs"
+            paddingRight="4px"
+            marginRight="8px"
+            marginBottom="-10px"
+            backgroundColor="gray.500"
+          >
+            <TagRightIcon>
+              <InfoIcon color="gray.700" marginRight="4px" />
+            </TagRightIcon>
+            <TagLabel>log</TagLabel>
+          </Tag>
+          <Meta>{syntaxify(input.line, { color: 'gray.300' }) as string}</Meta>
+        </Text>
+      );
     }
   }
 
@@ -99,7 +120,7 @@ export const syntaxify = (
                 {key}:{' '}
               </Text>
               <Text as="span" className="syntax-object-value">
-                {syntaxify(value) as string | React.JSX.Element}
+                {syntaxify(value, { color }) as string | React.JSX.Element}
                 {i < arr.length - 1 && ', '}
               </Text>
             </>
