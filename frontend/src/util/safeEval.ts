@@ -10,6 +10,8 @@ export class BlockedBySandbox extends Error {
     this.message = 'Action blocked';
   }
 }
+const scope: string[] = [];
+
 export const safeEval = async (input: string): Promise<SafeEvalResult> => {
   // const wrapper =
   const blocked = new Proxy(function () {}, {
@@ -53,15 +55,16 @@ export const safeEval = async (input: string): Promise<SafeEvalResult> => {
           reject(new Error(message.error));
         }
       };
-
       // Post the code to the worker
       worker.postMessage(code);
     });
   };
   try {
-    const result = await executeCodeInWorker(input)
+    scope.push(input);
+    const result = await executeCodeInWorker(scope.join(';\n'))
     return { type: 'result', result };
   } catch (e: any) {
+    scope.pop();
     return { type: 'error', error: e.toString() };
   }
 };
