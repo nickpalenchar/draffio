@@ -33,6 +33,7 @@ export const Editor: FC<EditorParams> = ({ onExecute }) => {
     }
 
     const code = codeEditor.state.doc.toString();
+    onExecute(code);
   };
 
   return (

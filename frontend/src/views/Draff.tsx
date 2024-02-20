@@ -4,6 +4,8 @@ import { EditorView, basicSetup } from 'codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { Terminal } from '../components/Terminal';
 import { Editor } from '../components/Editor';
+import { EvalResultType, safeEval } from '../util/safeEval';
+import { syntaxify } from '../util/syntaxify';
 
 const defaultLines = [
   ...`     ,"-.
@@ -37,7 +39,15 @@ export const Draff = () => {
     return () => editor.destroy();
   }, []);
 
-  const onExecute = () => {};
+  const onExecute = async (code: string) => {
+    setTermLines([]);
+    const output = await safeEval(code);
+    if (output[EvalResultType] === 'result') {
+      setTermLines([output.result]);
+    }
+    console.log({ output });
+    // setTermLines([output]);
+  };
 
   return (
     <Stack maxHeight="100vh" overflowY={'scroll'}>
