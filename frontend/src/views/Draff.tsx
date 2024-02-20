@@ -3,6 +3,7 @@ import { Flex, Center, Box, Stack, Button } from '@chakra-ui/react';
 import { EditorView, basicSetup } from 'codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { Terminal } from '../components/Terminal';
+import { Editor } from '../components/Editor';
 
 const defaultLines = [
   ...`     ,"-.
@@ -36,15 +37,14 @@ export const Draff = () => {
     return () => editor.destroy();
   }, []);
 
+  const onExecute = () => {};
+
   return (
-    <Stack h="100vh">
+    <Stack maxHeight="100vh" overflowY={'scroll'}>
       <Center h="5em">Hello</Center>
-      <Center>
-        <Button>Run Code</Button>
-      </Center>
       <Flex height="100%" maxHeight="100%" bg="gray.700" margin="3em">
-        <Box minWidth="50%" bg="yellow.50" ref={editorRef}>
-          <Box margin={'1.5em'} ref={editorRef} />
+        <Box minWidth="50%" bg="yellow.50" maxH="100%">
+          <Editor onExecute={onExecute} />
         </Box>
         <Terminal lines={termLines} onSetLines={onSetTermLines} />
       </Flex>
