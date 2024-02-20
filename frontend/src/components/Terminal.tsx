@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, FC } from 'react';
 import { Box, Text } from '@chakra-ui/react';
 import { ConsoleFn, EvalResultType, safeEval } from '../util/safeEval';
-import { syntaxify } from '../util/syntaxify';
+import { asPlainText, syntaxify } from '../util/syntaxify';
 
 interface TerminalProps {
   lines: any[];
@@ -37,7 +37,6 @@ export const Terminal: FC<TerminalProps> = ({
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [innerHeight, setInnerHeight] = useState<number | null>(null);
-  // const [lines, onSetLines] = useState<(string | React.JSX.Element)[]>();
   const [inputVal, setInputVal] = useState<string>('');
 
   const handleTerminalClick = () => {
@@ -66,7 +65,7 @@ export const Terminal: FC<TerminalProps> = ({
       );
       onSetLines([...lines, ...logLines]);
     };
-    const output = syntaxify(await safeEval(input, { consoleFn }));
+    const output = await safeEval(input, { consoleFn });
 
     console.log({ output });
     if (
@@ -85,12 +84,7 @@ export const Terminal: FC<TerminalProps> = ({
         ]);
       }
     } else {
-      onSetLines([
-        ...lines,
-        '> ' + (input as unknown as string),
-        ...logLines,
-        output as string,
-      ]);
+      onSetLines([...lines, asPlainText('> ' + input), ...logLines, output]);
     }
   };
 
@@ -115,7 +109,7 @@ export const Terminal: FC<TerminalProps> = ({
       onClick={handleTerminalClick}
     >
       {lines.map((line, i) => (
-        <pre key={i.toString()}>{line}</pre>
+        <pre key={i.toString() + line.className}>{syntaxify(line)}</pre>
       ))}
       <div>
         {'>'}{' '}

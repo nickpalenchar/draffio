@@ -13,14 +13,39 @@ const Meta = ({ children }: { children: any }) => (
   </Text>
 );
 
+const PlainText = Symbol();
+
+export const asPlainText = (input: any) => ({
+  [PlainText]: input.toString(),
+});
+
 export const syntaxify = (
-  input: any | SafeEvalResult,
+  input: any,
   { color }: { color?: string } = {},
-):
-  | string
-  | React.JSX.Element
-  | { [EvalResultType]: 'event'; event: string } => {
+): React.JSX.Element => {
   console.log('parsing input', input);
+
+  // special syntax
+  try {
+    if (input?.[PlainText]) {
+      return (
+        <Text as="span" className="syntax-plaintext">
+          {input[PlainText]}
+        </Text>
+      );
+    }
+  } catch (e) {
+    // noop
+  }
+
+  if (input instanceof Error) {
+    return (
+      <Text color={'red'} as="span" className="syntax-error">
+        {input.toString()}
+      </Text>
+    );
+  }
+
   if (input === undefined) {
     return <Meta>undefined</Meta>;
   }
@@ -76,45 +101,46 @@ export const syntaxify = (
   }
 
   // parsing from postMessage
-  if (EvalResultType in input) {
-    if (input[EvalResultType] === 'result') {
-      return syntaxify(input.result, { color });
+  try {
+    if (EvalResultType in input) {
+      if (input[EvalResultType] === 'result') {
+        return syntaxify(input.result, { color });
+      }
+      if (input[EvalResultType] === 'event') {
+        // gets handled further up the callstack.
+        return input;
+      }
+      if (input[EvalResultType] === 'console') {
+        console.log('level???', input.level);
+        const levels = {
+          log: ['gray.500', <InfoIcon color="gray.700" marginRight="4px" />],
+          warn: [
+            'yellow.500',
+            <WarningTwoIcon color="yellow.700" marginRight="4px" />,
+          ],
+          error: ['red.500', <WarningIcon color="red.900" marginRight="4px" />],
+        };
+        console.log(levels[input.level as 'log']);
+        const [tagColor, icon] = levels[input.level as 'log'];
+        return (
+          <Text className="syntax-console" as="span">
+            <Tag
+              size="xs"
+              paddingRight="4px"
+              marginRight="8px"
+              marginBottom="-10px"
+              backgroundColor={tagColor as string}
+            >
+              <TagRightIcon>{icon}</TagRightIcon>
+              <TagLabel>log</TagLabel>
+            </Tag>
+            <Meta>{syntaxify(input.line, { color: 'gray.300' })}</Meta>
+          </Text>
+        );
+      }
     }
-    if (input[EvalResultType] === 'error') {
-      return <Text color={'red'}>{input.error}</Text>;
-    }
-    if (input[EvalResultType] === 'event') {
-      // gets handled further up the callstack.
-      return input;
-    }
-    if (input[EvalResultType] === 'console') {
-      console.log('level???', input.level);
-      const levels = {
-        log: ['gray.500', <InfoIcon color="gray.700" marginRight="4px" />],
-        warn: [
-          'yellow.500',
-          <WarningTwoIcon color="yellow.700" marginRight="4px" />,
-        ],
-        error: ['red.500', <WarningIcon color="red.900" marginRight="4px" />],
-      };
-      console.log(levels[input.level as 'log']);
-      const [tagColor, icon] = levels[input.level as 'log'];
-      return (
-        <Text className="syntax-console" as="span">
-          <Tag
-            size="xs"
-            paddingRight="4px"
-            marginRight="8px"
-            marginBottom="-10px"
-            backgroundColor={tagColor as string}
-          >
-            <TagRightIcon>{icon}</TagRightIcon>
-            <TagLabel>log</TagLabel>
-          </Tag>
-          <Meta>{syntaxify(input.line, { color: 'gray.300' }) as string}</Meta>
-        </Text>
-      );
-    }
+  } catch (e) {
+    //noop
   }
 
   // TODO object

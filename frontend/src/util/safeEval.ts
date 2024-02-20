@@ -30,7 +30,8 @@ const _safeWrap = (input: string) => {
 export const safeEval = async (
   input: string,
   { consoleFn }: SafeEvalOptions = {},
-): Promise<SafeEvalResult> => {
+): Promise<any> => {
+  console.log('calling', { input})
   const blob = new Blob(
     [
       `
@@ -140,8 +141,11 @@ export const safeEval = async (
     );
 
     scope.push(mutedResult);
-    return { [EvalResultType]: 'result', result };
+    return result;
   } catch (e: any) {
-    return { [EvalResultType]: 'error', error: e.toString() };
+    if (e instanceof Error) {
+      return e;
+    }
+    return new Error(e)
   }
 };

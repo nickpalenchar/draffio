@@ -42,10 +42,11 @@ export const Draff = () => {
   const onExecute = async (code: string) => {
     setTermLines([]);
     const output = await safeEval(code);
-    if (output[EvalResultType] === 'result') {
-      setTermLines([output.result]);
-    }
     console.log({ output });
+    setTermLines([output]);
+    // if (output[EvalResultType] === 'result') {
+    //   setTermLines([output.result]);
+    // }
     // setTermLines([output]);
   };
 
