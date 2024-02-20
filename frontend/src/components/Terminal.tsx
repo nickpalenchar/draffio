@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef, FC } from 'react';
 import { Box, Text } from '@chakra-ui/react';
 import { ConsoleFn, EvalResultType, safeEval } from '../util/safeEval';
-import { asPlainText } from '../util/syntaxify';
+import { MetaSyntox, asLogLevel, asPlainText } from '../util/syntaxify';
 
 interface TerminalProps {
   lines: any[];
   onNewLines?: (lines: string[]) => void;
   onTermClear?: () => void;
   onClear?: () => void;
+  onConsole?: (args: any, level: MetaSyntox['level']) => void;
 }
 
 const terminalStyle: React.CSSProperties = {
@@ -36,6 +37,7 @@ export const Terminal: FC<TerminalProps> = ({
   lines,
   onNewLines = () => null,
   onClear = () => {},
+  onConsole = () => {},
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [innerHeight, setInnerHeight] = useState<number | null>(null);
@@ -60,6 +62,7 @@ export const Terminal: FC<TerminalProps> = ({
   const processLine = async (input: string) => {
     const logLines: any[] = [];
     const consoleFn: ConsoleFn = (level, args) => {
+      logLines.push(asLogLevel(args[0], level));
       // logLines.push(
       //   ...args.map((line) =>
       //     syntaxify({ [EvalResultType]: 'console', level, line }),

@@ -19,6 +19,7 @@ const MetaType = Symbol();
 export type MetaSyntox = {
   [MetaType]: string;
   [MetaValue]: any;
+  level?: 'log' | 'warn' | 'error';
 };
 
 export const asPlainText = (input: any) => {
@@ -26,6 +27,13 @@ export const asPlainText = (input: any) => {
     return { [MetaType]: 'plaintext', [MetaValue]: input[MetaValue] };
   }
   return { [MetaType]: 'plaintext', [MetaValue]: input.toString() };
+};
+export const asLogLevel = (input: any, level: MetaSyntox['level'] = 'log') => {
+  console.log('asConsole', { input, level });
+  if (typeof input === 'object' && input !== null && input[MetaType]) {
+    return { [MetaType]: 'console', [MetaValue]: input[MetaValue], level };
+  }
+  return { [MetaType]: 'console', [MetaValue]: input, level };
 };
 
 export const syntaxify = (
@@ -36,10 +44,37 @@ export const syntaxify = (
 
   // special syntax
   try {
-    if (input?.[MetaValue]) {
+    if (input?.[MetaType] === 'plaintext') {
       return (
         <Text as="span" className="syntax-plaintext">
           {input[MetaValue]}
+        </Text>
+      );
+    }
+    if (input?.[MetaType] === 'console') {
+      const levels = {
+        log: ['gray.500', <InfoIcon color="gray.700" marginRight="4px" />],
+        warn: [
+          'yellow.500',
+          <WarningTwoIcon color="yellow.700" marginRight="4px" />,
+        ],
+        error: ['red.500', <WarningIcon color="red.900" marginRight="4px" />],
+      };
+      console.log(levels[input.level as 'log']);
+      const [tagColor, icon] = levels[input.level as 'log'];
+      return (
+        <Text className="syntax-console" as="span">
+          <Tag
+            size="xs"
+            paddingRight="4px"
+            marginRight="8px"
+            marginBottom="-10px"
+            backgroundColor={tagColor as string}
+          >
+            <TagRightIcon>{icon}</TagRightIcon>
+            <TagLabel>log</TagLabel>
+          </Tag>
+          <Meta>{syntaxify(input[MetaValue], { color: 'gray.300' })}</Meta>
         </Text>
       );
     }
@@ -118,34 +153,6 @@ export const syntaxify = (
       if (input[EvalResultType] === 'event') {
         // gets handled further up the callstack.
         return input;
-      }
-      if (input[EvalResultType] === 'console') {
-        console.log('level???', input.level);
-        const levels = {
-          log: ['gray.500', <InfoIcon color="gray.700" marginRight="4px" />],
-          warn: [
-            'yellow.500',
-            <WarningTwoIcon color="yellow.700" marginRight="4px" />,
-          ],
-          error: ['red.500', <WarningIcon color="red.900" marginRight="4px" />],
-        };
-        console.log(levels[input.level as 'log']);
-        const [tagColor, icon] = levels[input.level as 'log'];
-        return (
-          <Text className="syntax-console" as="span">
-            <Tag
-              size="xs"
-              paddingRight="4px"
-              marginRight="8px"
-              marginBottom="-10px"
-              backgroundColor={tagColor as string}
-            >
-              <TagRightIcon>{icon}</TagRightIcon>
-              <TagLabel>log</TagLabel>
-            </Tag>
-            <Meta>{syntaxify(input.line, { color: 'gray.300' })}</Meta>
-          </Text>
-        );
       }
     }
   } catch (e) {

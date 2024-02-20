@@ -5,7 +5,12 @@ import { javascript } from '@codemirror/lang-javascript';
 import { Terminal } from '../components/Terminal';
 import { Editor } from '../components/Editor';
 import { safeEval } from '../util/safeEval';
-import { asPlainText, syntaxify } from '../util/syntaxify';
+import {
+  MetaSyntox,
+  asLogLevel,
+  asPlainText,
+  syntaxify,
+} from '../util/syntaxify';
 
 const defaultLines = [
   ...`     ,"-.
@@ -53,6 +58,11 @@ export const Draff = () => {
     // setTermLines([output]);
   };
   const onTermClear = () => setTermLines([]);
+  const onTermConsole = (arg: any, level: MetaSyntox['level']) => {
+    console.log('HELLOOO???');
+    setTermLines([]);
+    // setTermLines([syntaxify(asLogLevel(arg, level))]);
+  };
 
   return (
     <Stack maxHeight="100vh" overflowY={'scroll'}>
@@ -65,6 +75,7 @@ export const Draff = () => {
           lines={termLines}
           onNewLines={onNewTermLines}
           onClear={onTermClear}
+          onConsole={onTermConsole}
         />
       </Flex>
     </Stack>
