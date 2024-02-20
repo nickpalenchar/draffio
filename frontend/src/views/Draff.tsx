@@ -13,7 +13,7 @@ import {
 } from '../util/syntaxify';
 
 const defaultLines = [
-  ...`     ,"-.
+  ...`       ,"-.
        ||~'    Draff JS REPL v0.1 (preview)
     ___||         copyright (c) 2024 draff.io
    ,(.:')

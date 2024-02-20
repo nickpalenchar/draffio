@@ -19,6 +19,7 @@ interface SafeEvalOptions {
 
 const scope: string[] = [];
 
+
 const _safeWrap = (input: string) => {
   if (input.trim().startsWith('{') && input.trim().endsWith('}')) {
     return `(${input})`;
@@ -31,48 +32,8 @@ export const safeEval = async (
   { consoleFn }: SafeEvalOptions = {},
 ): Promise<any> => {
   console.log('calling', { input });
-  const blob = new Blob(
-    [
-      `
-  onmessage = function(e) {
-    console.log('DATA', e.data);
-    let $$$consoleOn = true;
-    const $$$shadowConsole = {
-      log(...args) {
-        $$$consoleOn && postMessage({ type: 'console', console: args, level: 'log' })
-      },
-      warn(...args) {
-        $$$consoleOn && postMessage({ type: 'console', console: args, level: 'warn' })
-      },
-      error(...args) {
-        $$$consoleOn && postMessage({ type: 'console', console: args, level: 'error' })
-      },
-    }
-    const $$$setConsole = (state) => $$$consoleOn = state;
-    
-    console.log({ codeToRun: e.data });
 
-    return ((document, console) => {
-      // special events
-      try {
-        const codeToRun = e.data;
-        const result = eval(codeToRun);
-        postMessage({ type: 'result', result });
-      } catch (error) {
-        if (error?.name === 'DataCloneError') {
-          postMessage({type: 'error', error: 'Blocked action.'});
-        } else {
-          postMessage({ type: 'error', error: error?.message || error.toString() });
-        }
-      }
-    })(undefined, $$$shadowConsole)
-  };
-`,
-    ],
-    { type: 'application/javascript' },
-  );
-
-  const worker = new Worker(URL.createObjectURL(blob));
+  const worker = new Worker('/worker.js');
 
   const executeCodeInWorker = (
     code: string,
