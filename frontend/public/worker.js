@@ -1,3 +1,6 @@
+// eslint-disable-next-line no-undef
+console.log('IMPORTING SCRIPTS');
+importScripts('/promise.polyfill.js');
 onmessage = function (e) {
   console.log('DATA', e.data);
   let $$$consoleOn = true;
@@ -19,15 +22,14 @@ onmessage = function (e) {
 
   console.log({ codeToRun: e.data });
 
-  const safeEval = new Function('document', 'console');
-
   return ((document, console) => {
     // special events
+    let result;
     try {
       const codeToRun = e.data;
-      const result = eval(codeToRun);
-      postMessage({ type: 'result', result });
+      result = eval(codeToRun);
     } catch (error) {
+      console.error(error);
       if (error?.name === 'DataCloneError') {
         postMessage({ type: 'error', error: 'Blocked action.' });
       } else {
@@ -35,6 +37,16 @@ onmessage = function (e) {
           type: 'error',
           error: error?.message || error.toString(),
         });
+      }
+    }
+    if (result) {
+      if (typeof result === 'function') {
+        this.postMessage({
+          type: 'result-function',
+          result: { name: result.name || '(anonymous)' },
+        });
+      } else {
+        postMessage({ type: 'result', result });
       }
     }
   })(undefined, $$$shadowConsole);

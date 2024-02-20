@@ -1,4 +1,4 @@
-export const EvalResultType = Symbol();
+export const EvalResultType = Symbol('EvalResultType');
 
 export type SafeEvalResult =
   | { [EvalResultType]: 'result'; result: string }
@@ -38,7 +38,7 @@ export const safeEval = async (
   const executeCodeInWorker = (
     code: string,
     { consoleFn }: SafeEvalOptions = {},
-  ): Promise<string> => {
+  ): Promise<any> => {
     return new Promise((resolve, reject) => {
       // Handle messages from the worker
       worker.onmessage = (event) => {
@@ -49,6 +49,8 @@ export const safeEval = async (
         }
         if (message.type === 'result') {
           resolve(message.result);
+        } else if (message.type === 'result-function') { 
+          resolve({ [EvalResultType]: 'function', name: message.result.name })
         } else if (message.type === 'error') {
           reject(new Error(message.error));
         }
