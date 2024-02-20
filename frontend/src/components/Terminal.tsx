@@ -1,7 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, FC } from 'react';
 import { Box, Text } from '@chakra-ui/react';
 import { ConsoleFn, EvalResultType, safeEval } from '../util/safeEval';
 import { syntaxify } from '../util/syntaxify';
+
+interface TerminalProps {
+  lines: any[];
+  onSetLines?: (lines: any[]) => void;
+  onClear?: () => void;
+}
 
 const terminalStyle: React.CSSProperties = {
   cursor: 'text',
@@ -25,18 +31,23 @@ const inputStyle: React.CSSProperties = {
   msScrollbarTrackColor: 'transparent', // track color (Chrome, Safari)
 };
 
-export const Terminal = () => {
+const defaultLines = [
+  ...`         ,"-.
+       ||~'    Draff JS REPL v0.1 (preview)
+    ___||         copyright (c) 2024 draff.io
+   ,(.:')
+    || ||
+    ^^ ^^
+    `.split('\n'),
+];
+
+export const Terminal: FC<TerminalProps> = ({
+  lines = defaultLines,
+  onSetLines = () => null,
+}) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [innerHeight, setInnerHeight] = useState<number | null>(null);
-  const [lines, setLines] = useState<(string | React.JSX.Element)[]>([
-    ...`         ,"-.
-         ||~'    Draff JS REPL v0.1 (preview)
-      ___||         copyright (c) 2024 draff.io
-     ,(.:')
-      || ||
-      ^^ ^^
-      `.split('\n'),
-  ]);
+  // const [lines, onSetLines] = useState<(string | React.JSX.Element)[]>();
   const [inputVal, setInputVal] = useState<string>('');
 
   const handleTerminalClick = () => {
@@ -63,7 +74,7 @@ export const Terminal = () => {
           syntaxify({ [EvalResultType]: 'console', level, line }),
         ),
       );
-      setLines([...lines, ...logLines]);
+      onSetLines([...lines, ...logLines]);
     };
     const output = syntaxify(await safeEval(input, { consoleFn }));
 
@@ -74,9 +85,9 @@ export const Terminal = () => {
       'event' in output
     ) {
       if (output.event === 'CLEAR') {
-        setLines([]);
+        onSetLines([]);
       } else if (output.event === 'HELP') {
-        setLines([
+        onSetLines([
           ...lines,
           <Text color="blue.300" fontStyle={'italic'}>
             {'Help Commands:\n  .help - show this\n  .clear - clear the screen'}
@@ -84,7 +95,7 @@ export const Terminal = () => {
         ]);
       }
     } else {
-      setLines([
+      onSetLines([
         ...lines,
         '> ' + (input as unknown as string),
         ...logLines,
