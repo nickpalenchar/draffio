@@ -17,7 +17,6 @@ interface SafeEvalOptions {
   consoleFn?: ConsoleFn;
 }
 
-
 const scope: string[] = [];
 
 const _safeWrap = (input: string) => {
@@ -30,7 +29,8 @@ const _safeWrap = (input: string) => {
 export const safeEval = async (
   input: string,
   { consoleFn }: SafeEvalOptions = {},
-): Promise<SafeEvalResult> => {
+): Promise<any> => {
+  console.log('calling', { input });
   const blob = new Blob(
     [
       `
@@ -106,6 +106,7 @@ export const safeEval = async (
       trimmed.startsWith('const') ||
       trimmed.startsWith('var') ||
       trimmed.startsWith('function') ||
+      trimmed.startsWith('async') ||
       trimmed.startsWith('undefined') ||
       trimmed.startsWith('void') ||
       trimmed.startsWith(';') ||
@@ -131,17 +132,21 @@ export const safeEval = async (
       return { [EvalResultType]: 'event', event: 'HELP' };
     }
 
-    const pastCode = ['$$$setConsole(false)', ...scope, '$$$setConsole(true)']
+    const pastCode = ['$$$setConsole(false)', ...scope, '$$$setConsole(true)'];
 
     const wrapped = _safeWrap(input);
     const mutedResult = await _mute(wrapped);
     const result = await executeCodeInWorker(
-      pastCode.join(';\n') + `;\n${wrapped}`, { consoleFn }
+      pastCode.join(';\n') + `;\n${wrapped}`,
+      { consoleFn },
     );
 
     scope.push(mutedResult);
-    return { [EvalResultType]: 'result', result };
+    return result;
   } catch (e: any) {
-    return { [EvalResultType]: 'error', error: e.toString() };
+    if (e instanceof Error) {
+      return e;
+    }
+    return new Error(e);
   }
 };

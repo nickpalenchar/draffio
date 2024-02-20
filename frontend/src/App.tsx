@@ -1,5 +1,9 @@
 import React from 'react';
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import {
+  RouterProvider,
+  createBrowserRouter,
+  redirect,
+} from 'react-router-dom';
 import {
   ChakraProvider,
   extendBaseTheme,
@@ -29,7 +33,10 @@ const theme = extendBaseTheme({
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <div>Home page</div>,
+    Component: () => {
+      document.location.href = '/js/new';
+      return <div></div>;
+    },
   },
   {
     path: '/js',

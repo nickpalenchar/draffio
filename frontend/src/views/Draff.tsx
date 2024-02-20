@@ -4,8 +4,13 @@ import { EditorView, basicSetup } from 'codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { Terminal } from '../components/Terminal';
 import { Editor } from '../components/Editor';
-import { EvalResultType, safeEval } from '../util/safeEval';
-import { syntaxify } from '../util/syntaxify';
+import { ConsoleFn, safeEval } from '../util/safeEval';
+import {
+  MetaSyntox,
+  asLogLevel,
+  asPlainText,
+  syntaxify,
+} from '../util/syntaxify';
 
 const defaultLines = [
   ...`     ,"-.
@@ -14,7 +19,9 @@ const defaultLines = [
    ,(.:')
     || ||
     ^^ ^^
-    `.split('\n'),
+    `
+    .split('\n')
+    .map((line) => syntaxify(asPlainText(line))),
 ];
 
 export const Draff = () => {
@@ -22,7 +29,8 @@ export const Draff = () => {
   const [codeEditor, setCodeEditor] = useState<EditorView | null>(null);
   const [termLines, setTermLines] = useState(defaultLines);
 
-  const onSetTermLines = (lines: string[]) => setTermLines(lines);
+  const onNewTermLines = (lines: string[]) =>
+    setTermLines([...termLines, ...lines.map((line) => syntaxify(line))]);
 
   useEffect(() => {
     if (!editorRef.current || codeEditor) {
@@ -41,12 +49,17 @@ export const Draff = () => {
 
   const onExecute = async (code: string) => {
     setTermLines([]);
-    const output = await safeEval(code);
-    if (output[EvalResultType] === 'result') {
-      setTermLines([output.result]);
-    }
+    const logLines: React.JSX.Element[] = [];
+    const consoleFn: ConsoleFn = (level: any, args: any[]) => {
+      logLines.push(syntaxify(asLogLevel(args[0], level)));
+    };
+    const output = await safeEval(code, { consoleFn });
     console.log({ output });
-    // setTermLines([output]);
+    setTermLines([...logLines, syntaxify(output)]);
+  };
+  const onTermClear = () => setTermLines([]);
+  const onTermConsole = (arg: any, level: MetaSyntox['level']) => {
+    setTermLines([]);
   };
 
   return (
@@ -56,7 +69,12 @@ export const Draff = () => {
         <Box minWidth="50%" bg="yellow.50" maxH="100%">
           <Editor onExecute={onExecute} />
         </Box>
-        <Terminal lines={termLines} onSetLines={onSetTermLines} />
+        <Terminal
+          lines={termLines}
+          onNewLines={onNewTermLines}
+          onClear={onTermClear}
+          onConsole={onTermConsole}
+        />
       </Flex>
     </Stack>
   );
