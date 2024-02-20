@@ -2,7 +2,8 @@
  * to be rendered. The use case is adding some UI to Terminal compnent.
  */
 import React from 'react';
-import { Tag, TagLabel, TagRightIcon, Text } from '@chakra-ui/react';
+import { PiFunctionFill } from 'react-icons/pi';
+import { Icon, Tag, TagLabel, TagRightIcon, Text } from '@chakra-ui/react';
 
 import { EvalResultType, SafeEvalResult } from './safeEval';
 import { InfoIcon, WarningIcon, WarningTwoIcon } from '@chakra-ui/icons';
@@ -82,6 +83,15 @@ export const syntaxify = (
     // noop
   }
 
+  // native types that need to be reconstructed (can't be cloned from worker)
+  if (typeof input === 'object' && input?.[EvalResultType] === 'function') {
+    return (
+      <Text color={'purple.300'} as="span" className="syntax-function">
+        [<Icon as={PiFunctionFill} boxSize={4} marginBottom={'-3px'}></Icon>{' '}
+        Function: {input.name}]
+      </Text>
+    );
+  }
   if (input instanceof Error) {
     return (
       <Text color={'red'} as="span" className="syntax-error">
