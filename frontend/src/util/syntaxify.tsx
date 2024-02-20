@@ -13,11 +13,20 @@ const Meta = ({ children }: { children: any }) => (
   </Text>
 );
 
-const PlainText = Symbol();
+const MetaValue = Symbol();
+const MetaType = Symbol();
 
-export const asPlainText = (input: any) => ({
-  [PlainText]: input.toString(),
-});
+export type MetaSyntox = {
+  [MetaType]: string;
+  [MetaValue]: any;
+};
+
+export const asPlainText = (input: any) => {
+  if (typeof input === 'object' && input !== null && input[MetaType]) {
+    return { [MetaType]: 'plaintext', [MetaValue]: input[MetaValue] };
+  }
+  return { [MetaType]: 'plaintext', [MetaValue]: input.toString() };
+};
 
 export const syntaxify = (
   input: any,
@@ -27,10 +36,10 @@ export const syntaxify = (
 
   // special syntax
   try {
-    if (input?.[PlainText]) {
+    if (input?.[MetaValue]) {
       return (
         <Text as="span" className="syntax-plaintext">
-          {input[PlainText]}
+          {input[MetaValue]}
         </Text>
       );
     }

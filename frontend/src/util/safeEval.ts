@@ -107,6 +107,7 @@ export const safeEval = async (
       trimmed.startsWith('const') ||
       trimmed.startsWith('var') ||
       trimmed.startsWith('function') ||
+      trimmed.startsWith('async') ||
       trimmed.startsWith('undefined') ||
       trimmed.startsWith('void') ||
       trimmed.startsWith(';') ||

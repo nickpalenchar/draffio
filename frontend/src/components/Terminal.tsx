@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef, FC } from 'react';
 import { Box, Text } from '@chakra-ui/react';
 import { ConsoleFn, EvalResultType, safeEval } from '../util/safeEval';
-import { asPlainText, syntaxify } from '../util/syntaxify';
+import { asPlainText } from '../util/syntaxify';
 
 interface TerminalProps {
   lines: any[];
-  onSetLines?: (lines: any[]) => void;
+  onNewLines?: (lines: string[]) => void;
+  onTermClear?: () => void;
   onClear?: () => void;
 }
 
@@ -33,7 +34,8 @@ const inputStyle: React.CSSProperties = {
 
 export const Terminal: FC<TerminalProps> = ({
   lines,
-  onSetLines = () => null,
+  onNewLines = () => null,
+  onClear = () => {},
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const [innerHeight, setInnerHeight] = useState<number | null>(null);
@@ -58,12 +60,13 @@ export const Terminal: FC<TerminalProps> = ({
   const processLine = async (input: string) => {
     const logLines: any[] = [];
     const consoleFn: ConsoleFn = (level, args) => {
-      logLines.push(
-        ...args.map((line) =>
-          syntaxify({ [EvalResultType]: 'console', level, line }),
-        ),
-      );
-      onSetLines([...lines, ...logLines]);
+      // logLines.push(
+      //   ...args.map((line) =>
+      //     syntaxify({ [EvalResultType]: 'console', level, line }),
+      //   ),
+      // );
+      // TODO
+      // onNewLine([...lines, ...logLines]);
     };
     const output = await safeEval(input, { consoleFn });
 
@@ -74,17 +77,18 @@ export const Terminal: FC<TerminalProps> = ({
       'event' in output
     ) {
       if (output.event === 'CLEAR') {
-        onSetLines([]);
-      } else if (output.event === 'HELP') {
-        onSetLines([
-          ...lines,
-          <Text color="blue.300" fontStyle={'italic'}>
-            {'Help Commands:\n  .help - show this\n  .clear - clear the screen'}
-          </Text>,
-        ]);
+        onClear();
+      } else if (output.event === 'HELP' || false) {
+        // TODO
+        // onSetLines([
+        //   ...lines,
+        //   <Text color="blue.300" fontStyle={'italic'}>
+        //     {'Help Commands:\n  .help - show this\n  .clear - clear the screen'}
+        //   </Text>,
+        // ]);
       }
     } else {
-      onSetLines([...lines, asPlainText('> ' + input), ...logLines, output]);
+      onNewLines([asPlainText('> ' + input), ...logLines, output]);
     }
   };
 
@@ -109,7 +113,7 @@ export const Terminal: FC<TerminalProps> = ({
       onClick={handleTerminalClick}
     >
       {lines.map((line, i) => (
-        <pre key={i.toString() + line.className}>{syntaxify(line)}</pre>
+        <pre key={i.toString() + line.className}>{line}</pre>
       ))}
       <div>
         {'>'}{' '}
