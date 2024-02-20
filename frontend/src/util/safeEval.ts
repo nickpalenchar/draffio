@@ -17,7 +17,6 @@ interface SafeEvalOptions {
   consoleFn?: ConsoleFn;
 }
 
-
 const scope: string[] = [];
 
 const _safeWrap = (input: string) => {
@@ -31,7 +30,7 @@ export const safeEval = async (
   input: string,
   { consoleFn }: SafeEvalOptions = {},
 ): Promise<any> => {
-  console.log('calling', { input})
+  console.log('calling', { input });
   const blob = new Blob(
     [
       `
@@ -133,12 +132,13 @@ export const safeEval = async (
       return { [EvalResultType]: 'event', event: 'HELP' };
     }
 
-    const pastCode = ['$$$setConsole(false)', ...scope, '$$$setConsole(true)']
+    const pastCode = ['$$$setConsole(false)', ...scope, '$$$setConsole(true)'];
 
     const wrapped = _safeWrap(input);
     const mutedResult = await _mute(wrapped);
     const result = await executeCodeInWorker(
-      pastCode.join(';\n') + `;\n${wrapped}`, { consoleFn }
+      pastCode.join(';\n') + `;\n${wrapped}`,
+      { consoleFn },
     );
 
     scope.push(mutedResult);
@@ -147,6 +147,6 @@ export const safeEval = async (
     if (e instanceof Error) {
       return e;
     }
-    return new Error(e)
+    return new Error(e);
   }
 };

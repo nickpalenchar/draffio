@@ -63,13 +63,6 @@ export const Terminal: FC<TerminalProps> = ({
     const logLines: any[] = [];
     const consoleFn: ConsoleFn = (level, args) => {
       logLines.push(asLogLevel(args[0], level));
-      // logLines.push(
-      //   ...args.map((line) =>
-      //     syntaxify({ [EvalResultType]: 'console', level, line }),
-      //   ),
-      // );
-      // TODO
-      // onNewLine([...lines, ...logLines]);
     };
     const output = await safeEval(input, { consoleFn });
 

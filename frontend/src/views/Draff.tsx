@@ -4,7 +4,7 @@ import { EditorView, basicSetup } from 'codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { Terminal } from '../components/Terminal';
 import { Editor } from '../components/Editor';
-import { safeEval } from '../util/safeEval';
+import { ConsoleFn, safeEval } from '../util/safeEval';
 import {
   MetaSyntox,
   asLogLevel,
@@ -49,19 +49,17 @@ export const Draff = () => {
 
   const onExecute = async (code: string) => {
     setTermLines([]);
-    const output = await safeEval(code);
+    const logLines: React.JSX.Element[] = [];
+    const consoleFn: ConsoleFn = (level: any, args: any[]) => {
+      logLines.push(syntaxify(asLogLevel(args[0], level)));
+    };
+    const output = await safeEval(code, { consoleFn });
     console.log({ output });
-    setTermLines([syntaxify(output)]);
-    // if (output[EvalResultType] === 'result') {
-    //   setTermLines([output.result]);
-    // }
-    // setTermLines([output]);
+    setTermLines([...logLines, syntaxify(output)]);
   };
   const onTermClear = () => setTermLines([]);
   const onTermConsole = (arg: any, level: MetaSyntox['level']) => {
-    console.log('HELLOOO???');
     setTermLines([]);
-    // setTermLines([syntaxify(asLogLevel(arg, level))]);
   };
 
   return (
