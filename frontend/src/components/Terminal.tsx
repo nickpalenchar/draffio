@@ -31,18 +31,8 @@ const inputStyle: React.CSSProperties = {
   msScrollbarTrackColor: 'transparent', // track color (Chrome, Safari)
 };
 
-const defaultLines = [
-  ...`         ,"-.
-       ||~'    Draff JS REPL v0.1 (preview)
-    ___||         copyright (c) 2024 draff.io
-   ,(.:')
-    || ||
-    ^^ ^^
-    `.split('\n'),
-];
-
 export const Terminal: FC<TerminalProps> = ({
-  lines = defaultLines,
+  lines,
   onSetLines = () => null,
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
