@@ -1,5 +1,19 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Flex, Center, Box, Stack, Button } from '@chakra-ui/react';
+import {
+  Flex,
+  Center,
+  Box,
+  Stack,
+  Button,
+  Alert,
+  AlertTitle,
+  AlertDialogBody,
+  AlertDescription,
+  AlertIcon,
+  Icon,
+  Link,
+} from '@chakra-ui/react';
+import { TbGhost2Filled } from 'react-icons/tb';
 import { EditorView, basicSetup } from 'codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { Terminal } from '../components/Terminal';
@@ -64,9 +78,19 @@ export const Draff = () => {
 
   return (
     <Stack maxHeight="100vh" overflowY={'scroll'}>
+      <Alert status={'warning'}>
+        <Icon as={TbGhost2Filled} boxSize={'52px'} color="yellow.800"></Icon>
+        <AlertTitle>NOTHING IS SAVED</AlertTitle>
+
+        <AlertDescription>
+          You're viewing an early preview of <Link href={'#'}>draff.io</Link>.
+          Remember, <b>All data is lost immediately on close or refresh</b>.
+          Thanks for stopping by ❤️
+        </AlertDescription>
+      </Alert>
       <Center h="5em">Hello</Center>
       <Flex height="100%" maxHeight="100%" bg="gray.700" margin="3em">
-        <Box minWidth="50%" bg="yellow.50" maxH="100%">
+        <Box minWidth="50%" bg="yellow.100" maxH="100%">
           <Editor onExecute={onExecute} />
         </Box>
         <Terminal
