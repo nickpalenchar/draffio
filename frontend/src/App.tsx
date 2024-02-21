@@ -33,11 +33,8 @@ const router = createBrowserRouter([
 ]);
 
 function App() {
-  return (
-    <div className="App">
-      <Outlet />
-    </div>
-  );
+  window.location.href = '/js/new';
+  return <div className="App"></div>;
 }
 
 export default App;
