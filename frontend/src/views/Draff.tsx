@@ -65,6 +65,7 @@ export const Draff = () => {
     setTermLines([]);
     const logLines: React.JSX.Element[] = [];
     const consoleFn: ConsoleFn = (level: any, args: any[]) => {
+      console.log('pushing lines', args);
       logLines.push(syntaxify(asLogLevel(args[0], level)));
     };
     const output = await safeEval(code, { consoleFn });

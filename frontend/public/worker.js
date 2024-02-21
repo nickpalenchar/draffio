@@ -31,6 +31,7 @@ onmessage = function (e) {
     } catch (error) {
       console.error(error);
       if (error?.name === 'DataCloneError') {
+        console.error(error);
         postMessage({ type: 'error', error: 'Blocked action.' });
       } else {
         postMessage({
@@ -48,6 +49,8 @@ onmessage = function (e) {
       } else {
         postMessage({ type: 'result', result });
       }
+    } else {
+      postMessage({ type: 'result', result: undefined });
     }
   })(undefined, $$$shadowConsole);
 };
