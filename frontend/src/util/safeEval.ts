@@ -19,7 +19,6 @@ interface SafeEvalOptions {
 
 const scope: string[] = [];
 
-
 const _safeWrap = (input: string) => {
   if (input.trim().startsWith('{') && input.trim().endsWith('}')) {
     return `(${input})`;
@@ -49,8 +48,8 @@ export const safeEval = async (
         }
         if (message.type === 'result') {
           resolve(message.result);
-        } else if (message.type === 'result-function') { 
-          resolve({ [EvalResultType]: 'function', name: message.result.name })
+        } else if (message.type === 'result-function') {
+          resolve({ [EvalResultType]: 'function', name: message.result.name });
         } else if (message.type === 'error') {
           reject(new Error(message.error));
         }
