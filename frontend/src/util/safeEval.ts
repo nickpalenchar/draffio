@@ -27,13 +27,13 @@ const _safeWrap = (input: string) => {
   return input;
 };
 
+const worker = new Worker('/worker.js');
+
 export const safeEval = async (
   input: string,
   { consoleFn }: SafeEvalOptions = {},
 ): Promise<any> => {
   console.log('calling', { input });
-
-  const worker = new Worker('/worker.js');
 
   const executeCodeInWorker = (
     code: string,
@@ -97,7 +97,6 @@ export const safeEval = async (
     }
 
     const pastCode = ['$$$setConsole(false)', ...scope, '$$$setConsole(true)'];
-
     const wrapped = _safeWrap(input);
     const mutedResult = await _mute(wrapped);
     const result = await executeCodeInWorker(
