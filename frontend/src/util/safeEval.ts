@@ -62,7 +62,8 @@ export const safeEval = async (
 
   /** silences (voids) statement so it doesn't return something, if applicable */
   const _mute = async (input: string) => {
-    console.log('muting', { input });
+    // TODO this might not be needed
+    return input;
     const trimmed = input.trim();
     if (
       trimmed.startsWith('let') ||
