@@ -79,7 +79,7 @@ export const Draff = () => {
 
   return (
     <Stack maxHeight="100vh" overflowY={'scroll'}>
-      <Alert status={'warning'}>
+      <Alert status={'warning'} minHeight={'34px'}>
         <Icon as={TbGhost2Filled} boxSize={'52px'} color="yellow.800"></Icon>
         <AlertTitle>NOTHING IS SAVED</AlertTitle>
 
@@ -90,7 +90,6 @@ export const Draff = () => {
           visiting ❤️
         </AlertDescription>
       </Alert>
-      <Center h="5em">Hello</Center>
       <Flex height="100%" maxHeight="100%" bg="gray.700" margin="3em">
         <Box minWidth="50%" bg="yellow.100" maxH="100%">
           <Editor onExecute={onExecute} />
