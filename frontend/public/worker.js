@@ -29,10 +29,8 @@ onmessage = function (e) {
       const codeToRun = e.data;
       result = eval(codeToRun);
     } catch (error) {
-      console.error(error);
       if (error?.name === 'DataCloneError') {
-        console.error(error);
-        postMessage({ type: 'error', error: 'Blocked action.' });
+        postMessage({ type: 'error', error: 'Unsupported Statement.' });
       } else {
         postMessage({
           type: 'error',
