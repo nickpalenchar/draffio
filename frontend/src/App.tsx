@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Outlet,
   RouterProvider,
   createBrowserRouter,
   redirect,
@@ -11,23 +12,6 @@ import {
 } from '@chakra-ui/react';
 import { Draff } from './views/Draff';
 import { RandomDraff } from './views/RandomDraff';
-
-// Chakra base theme: https://chakra-ui.com/getting-started#chakrabaseprovider
-const { Button, Tabs, Input, Container, Card, Modal, Heading, Alert, Tag } =
-  chakraTheme.components;
-const theme = extendBaseTheme({
-  components: {
-    Button,
-    Tabs,
-    Input,
-    Container,
-    Card,
-    Modal,
-    Heading,
-    Alert,
-    Tag,
-  },
-});
 
 // ROUTING
 const router = createBrowserRouter([
@@ -50,13 +34,9 @@ const router = createBrowserRouter([
 
 function App() {
   return (
-    <ChakraProvider theme={theme}>
-      <div className="App">
-        <header className="App-header">
-          <RouterProvider router={router} />
-        </header>
-      </div>
-    </ChakraProvider>
+    <div className="App">
+      <Outlet />
+    </div>
   );
 }
 
