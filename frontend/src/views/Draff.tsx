@@ -28,7 +28,7 @@ import {
 
 const defaultLines = [
   ...`       ,"-.
-       ||~'    Draff JS REPL v0.1 (preview)
+       ||~'    Draff JS REPL v00.1 (incomplete)
     ___||         copyright (c) 2024 draff.io
    ,(.:')
     || ||
@@ -65,6 +65,7 @@ export const Draff = () => {
     setTermLines([]);
     const logLines: React.JSX.Element[] = [];
     const consoleFn: ConsoleFn = (level: any, args: any[]) => {
+      console.log('pushing lines', args);
       logLines.push(syntaxify(asLogLevel(args[0], level)));
     };
     const output = await safeEval(code, { consoleFn });
@@ -83,9 +84,10 @@ export const Draff = () => {
         <AlertTitle>NOTHING IS SAVED</AlertTitle>
 
         <AlertDescription>
-          You're viewing an early preview of <Link href={'#'}>draff.io</Link>.
-          Remember, <b>All data is lost immediately on close or refresh</b>.
-          Thanks for stopping by ❤️
+          This is a pre-release ("double zero") of{' '}
+          <Link href={'#'}>draff.io</Link>. Remember,{' '}
+          <b>All data is lost immediately on close or refresh</b>. Thanks for
+          visiting ❤️
         </AlertDescription>
       </Alert>
       <Center h="5em">Hello</Center>

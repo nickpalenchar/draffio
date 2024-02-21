@@ -19,7 +19,6 @@ interface SafeEvalOptions {
 
 const scope: string[] = [];
 
-
 const _safeWrap = (input: string) => {
   if (input.trim().startsWith('{') && input.trim().endsWith('}')) {
     return `(${input})`;
@@ -27,13 +26,13 @@ const _safeWrap = (input: string) => {
   return input;
 };
 
+const worker = new Worker('/worker.js');
+
 export const safeEval = async (
   input: string,
   { consoleFn }: SafeEvalOptions = {},
 ): Promise<any> => {
   console.log('calling', { input });
-
-  const worker = new Worker('/worker.js');
 
   const executeCodeInWorker = (
     code: string,
@@ -49,8 +48,8 @@ export const safeEval = async (
         }
         if (message.type === 'result') {
           resolve(message.result);
-        } else if (message.type === 'result-function') { 
-          resolve({ [EvalResultType]: 'function', name: message.result.name })
+        } else if (message.type === 'result-function') {
+          resolve({ [EvalResultType]: 'function', name: message.result.name });
         } else if (message.type === 'error') {
           reject(new Error(message.error));
         }
@@ -62,7 +61,8 @@ export const safeEval = async (
 
   /** silences (voids) statement so it doesn't return something, if applicable */
   const _mute = async (input: string) => {
-    console.log('muting', { input });
+    // TODO this might not be needed
+    return input;
     const trimmed = input.trim();
     if (
       trimmed.startsWith('let') ||
@@ -96,7 +96,6 @@ export const safeEval = async (
     }
 
     const pastCode = ['$$$setConsole(false)', ...scope, '$$$setConsole(true)'];
-
     const wrapped = _safeWrap(input);
     const mutedResult = await _mute(wrapped);
     const result = await executeCodeInWorker(

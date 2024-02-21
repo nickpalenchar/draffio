@@ -48,9 +48,9 @@ export const Terminal: FC<TerminalProps> = ({
       inputRef.current.focus();
     }
   };
-  const handleOnKeyDown = (event: any) => {
+  const handleOnKeyDown = async (event: any) => {
     if (event.key === 'Enter') {
-      processLine(event.target.value);
+      await processLine(event.target.value);
       setInputVal('');
       return;
     }
@@ -61,12 +61,13 @@ export const Terminal: FC<TerminalProps> = ({
 
   const processLine = async (input: string) => {
     const logLines: any[] = [];
+    // let loghapen = false;
     const consoleFn: ConsoleFn = (level, args) => {
+      // loghapen = true;
+      // logLines.push('log happened');
       logLines.push(asLogLevel(args[0], level));
     };
     const output = await safeEval(input, { consoleFn });
-
-    console.log({ output });
     if (
       typeof output === 'object' &&
       output.hasOwnProperty(EvalResultType) &&
