@@ -41,7 +41,6 @@ export const safeEval = async (
     return new Promise((resolve, reject) => {
       // Handle messages from the worker
       worker.onmessage = (event) => {
-        console.log('EVENT', event);
         const message = event.data;
         if (message.type === 'console') {
           return consoleFn?.(message.level, message.console);
