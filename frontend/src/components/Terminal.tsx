@@ -70,6 +70,7 @@ export const Terminal: FC<TerminalProps> = ({
     const output = await safeEval(input, { consoleFn });
     if (
       typeof output === 'object' &&
+      output !== null &&
       output.hasOwnProperty(EvalResultType) &&
       'event' in output
     ) {
