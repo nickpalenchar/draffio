@@ -94,13 +94,14 @@ export const safeEval = async (
       return { [EvalResultType]: 'event', event: 'HELP' };
     }
 
-    const pastCode = ['$$$setConsole(false)', ...scope, '$$$setConsole(true)'];
+    const pastCode = ['void $$$setConsole(false)', ...scope, 'void $$$setConsole(true)'];
     const wrapped = _safeWrap(input);
     const mutedResult = await _mute(wrapped);
     const result = await executeCodeInWorker(
       pastCode.join(';\n') + `;\n${wrapped}`,
       { consoleFn },
     );
+    console.log('results', { code: pastCode.join(';\n') + `;\n${wrapped}`, result})
 
     scope.push(mutedResult);
     return result;

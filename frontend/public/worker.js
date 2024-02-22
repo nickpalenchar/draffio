@@ -1,5 +1,4 @@
 // eslint-disable-next-line no-undef
-console.log('IMPORTING SCRIPTS');
 importScripts('/promise.polyfill.js');
 onmessage = function (e) {
   console.log('DATA', e.data);
@@ -7,15 +6,15 @@ onmessage = function (e) {
   const $$$shadowConsole = {
     log(...args) {
       $$$consoleOn &&
-        postMessage({ type: 'console', console: args, level: 'log' });
+        void postMessage({ type: 'console', console: args, level: 'log' });
     },
     warn(...args) {
       $$$consoleOn &&
-        postMessage({ type: 'console', console: args, level: 'warn' });
+        void postMessage({ type: 'console', console: args, level: 'warn' });
     },
     error(...args) {
       $$$consoleOn &&
-        postMessage({ type: 'console', console: args, level: 'error' });
+        void postMessage({ type: 'console', console: args, level: 'error' });
     },
   };
   const $$$setConsole = (state) => ($$$consoleOn = state);
@@ -38,17 +37,13 @@ onmessage = function (e) {
         });
       }
     }
-    if (result) {
-      if (typeof result === 'function') {
-        this.postMessage({
-          type: 'result-function',
-          result: { name: result.name || '(anonymous)' },
-        });
-      } else {
-        postMessage({ type: 'result', result });
-      }
+    if (typeof result === 'function') {
+      this.postMessage({
+        type: 'result-function',
+        result: { name: result.name || '(anonymous)' },
+      }); // TODO detect promise object
     } else {
-      postMessage({ type: 'result', result: undefined });
+      postMessage({ type: 'result', result });
     }
   })(undefined, $$$shadowConsole);
 };
