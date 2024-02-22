@@ -42,6 +42,16 @@ onmessage = function (e) {
         type: 'result-function',
         result: { name: result.name || '(anonymous)' },
       }); // TODO detect promise object
+    } else if (
+      typeof result === 'object' &&
+      result !== null &&
+      result.hasOwnProperty('_state') &&
+      result.hasOwnProperty('_handled') &&
+      result.hasOwnProperty('_value') &&
+      result.hasOwnProperty('_deferreds') &&
+      result.hasOwnProperty('repr')
+    ) {
+      postMessage({ type: 'result-promise', result: result.repr() });
     } else {
       postMessage({ type: 'result', result });
     }

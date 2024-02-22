@@ -151,6 +151,15 @@ const Promise = (() => {
     this._deferreds = [];
     this[PromiseSymbol] = 'Promise';
 
+    this.repr = function () {
+      const STATES = ['Pending', 'Resolved', 'Rejected', 'Settled'];
+      return {
+        state: STATES[this._state],
+        value: this._value,
+        ___isPromise: true,
+      };
+    };
+
     doResolve(fn, this);
   };
 

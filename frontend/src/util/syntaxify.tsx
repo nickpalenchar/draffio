@@ -6,6 +6,7 @@ import { PiFunctionFill } from 'react-icons/pi';
 import { Icon, Tag, TagLabel, TagRightIcon, Text } from '@chakra-ui/react';
 
 import { EvalResultType, SafeEvalResult } from './safeEval';
+import { IoGift } from 'react-icons/io5';
 import { InfoIcon, WarningIcon, WarningTwoIcon } from '@chakra-ui/icons';
 
 const Meta = ({ children }: { children: any }) => (
@@ -79,10 +80,36 @@ export const syntaxify = (
         </Text>
       );
     }
+    if (typeof input === 'object' && input !== null && input.___isPromise) {
+      const statusColorsMap = {
+        Resolved: 'lime',
+        Rejected: 'red',
+        Pending: 'yellow',
+        Settled: 'grey',
+      };
+      const COLOR = 'pink.200';
+      return (
+        <Text as="span" className="syntax-promise">
+          <Text as="span" color={COLOR}>
+            [<Icon as={IoGift} boxSize={4} marginBottom="-3px" /> Promise{' '}
+          </Text>
+          <Text color={statusColorsMap[input.state as 'Resolved']} as="span">
+            ({input.state.toLowerCase()}){' '}
+          </Text>
+          <Text as="span" color={COLOR}>
+            value:{' '}
+          </Text>
+          {syntaxify(input.value)}
+          <Text as="span" color={COLOR}>
+            {' '}
+            ]
+          </Text>
+        </Text>
+      );
+    }
   } catch (e) {
     // noop
   }
-
   // native types that need to be reconstructed (can't be cloned from worker)
   if (typeof input === 'object' && input?.[EvalResultType] === 'function') {
     return (

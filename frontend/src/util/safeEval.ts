@@ -41,16 +41,19 @@ export const safeEval = async (
     return new Promise((resolve, reject) => {
       // Handle messages from the worker
       worker.onmessage = (event) => {
+        console.log('onmessage', { event })
         const message = event.data;
         if (message.type === 'console') {
           return consoleFn?.(message.level, message.console);
         }
-        if (message.type === 'result') {
+        if (message.type === 'result' || message.type === 'result-promise') {
           resolve(message.result);
         } else if (message.type === 'result-function') {
           resolve({ [EvalResultType]: 'function', name: message.result.name });
         } else if (message.type === 'error') {
           reject(new Error(message.error));
+        } else {
+          reject(new Error(`Unknown message type ${message.type}`));
         }
       };
       // Post the code to the worker
