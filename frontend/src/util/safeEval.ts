@@ -15,9 +15,10 @@ type ConsoleLevels = 'log' | 'warn' | 'error';
 export type ConsoleFn = (level: ConsoleLevels, args: any[]) => void;
 interface SafeEvalOptions {
   consoleFn?: ConsoleFn;
+  clearHistory?: boolean;
 }
 
-const scope: string[] = [];
+let scope: string[] = [];
 
 const _safeWrap = (input: string) => {
   if (input.trim().startsWith('{') && input.trim().endsWith('}')) {
@@ -30,9 +31,13 @@ const worker = new Worker('/worker.js');
 
 export const safeEval = async (
   input: string,
-  { consoleFn }: SafeEvalOptions = {},
+  { consoleFn, clearHistory = false }: SafeEvalOptions = {},
 ): Promise<any> => {
   console.log('calling', { input });
+
+  if (clearHistory) {
+    scope = [];
+  }
 
   const executeCodeInWorker = (
     code: string,
@@ -41,7 +46,6 @@ export const safeEval = async (
     return new Promise((resolve, reject) => {
       // Handle messages from the worker
       worker.onmessage = (event) => {
-        console.log('onmessage', { event })
         const message = event.data;
         if (message.type === 'console') {
           return consoleFn?.(message.level, message.console);
@@ -97,14 +101,17 @@ export const safeEval = async (
       return { [EvalResultType]: 'event', event: 'HELP' };
     }
 
-    const pastCode = ['void $$$setConsole(false)', ...scope, 'void $$$setConsole(true)'];
+    const pastCode = [
+      'void $$$setConsole(false)',
+      ...scope,
+      'void $$$setConsole(true)',
+    ];
     const wrapped = _safeWrap(input);
     const mutedResult = await _mute(wrapped);
     const result = await executeCodeInWorker(
       pastCode.join(';\n') + `;\n${wrapped}`,
       { consoleFn },
     );
-    console.log('results', { code: pastCode.join(';\n') + `;\n${wrapped}`, result})
 
     scope.push(mutedResult);
     return result;

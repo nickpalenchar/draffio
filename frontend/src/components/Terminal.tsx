@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, FC } from 'react';
-import { Box, Text } from '@chakra-ui/react';
+import { Box } from '@chakra-ui/react';
 import { ConsoleFn, EvalResultType, safeEval } from '../util/safeEval';
 import { MetaSyntox, asLogLevel, asPlainText } from '../util/syntaxify';
 
@@ -42,6 +42,8 @@ export const Terminal: FC<TerminalProps> = ({
   const inputRef = useRef<HTMLInputElement>(null);
   const [innerHeight, setInnerHeight] = useState<number | null>(null);
   const [inputVal, setInputVal] = useState<string>('');
+  const [history, setHistory] = useState<string[]>([]);
+  const [histIndex, setHistIndex] = useState<number>(-1);
 
   const handleTerminalClick = () => {
     if (inputRef.current) {
@@ -51,8 +53,35 @@ export const Terminal: FC<TerminalProps> = ({
   const handleOnKeyDown = async (event: any) => {
     if (event.key === 'Enter') {
       await processLine(event.target.value);
+      const newHist = [...history, event.target.value];
+      setHistory(newHist);
+      setHistIndex(newHist.length);
       setInputVal('');
       return;
+    }
+    if (event.key === 'ArrowUp') {
+      const nextHist = histIndex - 1;
+      if (nextHist < 0) {
+        return;
+      }
+      setHistIndex(nextHist);
+      setInputVal(history[nextHist]);
+
+      inputRef &&
+        inputRef.current?.setSelectionRange(
+          history[nextHist].length,
+          history[nextHist].length,
+        );
+    }
+    if (event.key === 'ArrowDown') {
+      const nextHist = histIndex + 1;
+      if (nextHist >= history.length) {
+        return;
+      }
+      setHistIndex(nextHist);
+      setInputVal(history[nextHist]);
+      inputRef &&
+        inputRef.current?.setSelectionRange(inputVal.length, inputVal.length);
     }
   };
   const handleOnChange = (event: any) => {
@@ -61,10 +90,7 @@ export const Terminal: FC<TerminalProps> = ({
 
   const processLine = async (input: string) => {
     const logLines: any[] = [];
-    // let loghapen = false;
     const consoleFn: ConsoleFn = (level, args) => {
-      // loghapen = true;
-      // logLines.push('log happened');
       logLines.push(asLogLevel(args[0], level));
     };
     const output = await safeEval(input, { consoleFn });

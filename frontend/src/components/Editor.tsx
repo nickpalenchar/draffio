@@ -4,7 +4,7 @@ import { EditorView, basicSetup } from 'codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 
 interface EditorParams {
-  onExecute: (code: string) => void;
+  onExecute: (code: string, clearScope?: boolean) => void;
 }
 
 export const Editor: FC<EditorParams> = ({ onExecute }) => {
@@ -33,7 +33,7 @@ export const Editor: FC<EditorParams> = ({ onExecute }) => {
     }
 
     const code = codeEditor.state.doc.toString();
-    onExecute(code);
+    onExecute(code, true);
   };
 
   return (
