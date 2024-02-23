@@ -61,14 +61,17 @@ export const Draff = () => {
     return () => editor.destroy();
   }, []);
 
-  const onExecute = async (code: string) => {
+  const onExecute = async (code: string, clearScope?: boolean) => {
     setTermLines([]);
     const logLines: React.JSX.Element[] = [];
     const consoleFn: ConsoleFn = (level: any, args: any[]) => {
       console.log('pushing lines', args);
       logLines.push(syntaxify(asLogLevel(args[0], level)));
     };
-    const output = await safeEval(code, { consoleFn });
+    const output = await safeEval(code, {
+      consoleFn,
+      clearHistory: clearScope,
+    });
     console.log({ output });
     setTermLines([...logLines, syntaxify(output)]);
   };
