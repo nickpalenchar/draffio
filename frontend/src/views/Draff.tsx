@@ -72,7 +72,6 @@ export const Draff = () => {
       consoleFn,
       clearHistory: clearScope,
     });
-    console.log({ output });
     setTermLines([...logLines, syntaxify(output)]);
   };
   const onTermClear = () => setTermLines([]);
