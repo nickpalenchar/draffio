@@ -42,6 +42,8 @@ onmessage = function (e) {
         type: 'result-function',
         result: { name: result.name || '(anonymous)' },
       }); // TODO detect promise object
+    } else if (typeof result === 'symbol') {
+      this.postMessage({ type: 'result-symbol', result: result.toString() });
     } else if (
       typeof result === 'object' &&
       result !== null &&
