@@ -4,6 +4,7 @@
 import React from 'react';
 import { PiFunctionFill } from 'react-icons/pi';
 import { Icon, Tag, TagLabel, TagRightIcon, Text } from '@chakra-ui/react';
+import { IoFlagSharp } from 'react-icons/io5';
 
 import { EvalResultType, SafeEvalResult } from './safeEval';
 import { IoGift } from 'react-icons/io5';
@@ -62,7 +63,6 @@ export const syntaxify = (
         ],
         error: ['red.500', <WarningIcon color="red.900" marginRight="4px" />],
       };
-      console.log(levels[input.level as 'log']);
       const [tagColor, icon] = levels[input.level as 'log'];
       return (
         <Text className="syntax-console" as="span">
@@ -116,6 +116,13 @@ export const syntaxify = (
       <Text color={'purple.300'} as="span" className="syntax-function">
         [<Icon as={PiFunctionFill} boxSize={4} marginBottom={'-3px'}></Icon>{' '}
         Function: {input.name}]
+      </Text>
+    );
+  }
+  if (typeof input === 'object' && input?.[EvalResultType] === 'symbol') {
+    return (
+      <Text color="teal.200" as="span" className="syntax-symbol">
+        <Icon as={IoFlagSharp} marginBottom="-4px" /> {input.result}
       </Text>
     );
   }

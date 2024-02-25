@@ -54,6 +54,8 @@ export const safeEval = async (
           resolve(message.result);
         } else if (message.type === 'result-function') {
           resolve({ [EvalResultType]: 'function', name: message.result.name });
+        } else if (message.type === 'result-symbol') {
+          resolve({ [EvalResultType]: 'symbol', result: message.result });
         } else if (message.type === 'error') {
           reject(new Error(message.error));
         } else {

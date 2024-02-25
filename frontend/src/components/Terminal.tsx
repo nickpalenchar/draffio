@@ -1,7 +1,12 @@
 import React, { useState, useEffect, useRef, FC } from 'react';
 import { Box } from '@chakra-ui/react';
 import { ConsoleFn, EvalResultType, safeEval } from '../util/safeEval';
-import { MetaSyntox, asLogLevel, asPlainText } from '../util/syntaxify';
+import {
+  MetaSyntox,
+  asLogLevel,
+  asPlainText,
+  syntaxify,
+} from '../util/syntaxify';
 
 interface TerminalProps {
   lines: any[];
@@ -91,7 +96,7 @@ export const Terminal: FC<TerminalProps> = ({
   const processLine = async (input: string) => {
     const logLines: any[] = [];
     const consoleFn: ConsoleFn = (level, args) => {
-      logLines.push(asLogLevel(args[0], level));
+      logLines.push(asLogLevel(syntaxify(args[0]), level));
     };
     const output = await safeEval(input, { consoleFn });
     if (
