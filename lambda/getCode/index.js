@@ -7,19 +7,19 @@ const { S3 } = require('aws-sdk')
 exports.handler = async (event) => {
   const client = new S3();
 
-
   const { DRAFFIO_CODE_BUCKET } = process.env;
 
   if (!DRAFFIO_CODE_BUCKET) {
     throw Error('No environment variable DRAFFIO_CODE_BUCKET set.');
   }
 
-  const requestBody = JSON.parse(event.body);
-  console.log({requestBody})
+  if(!event.path) {
+    return { status: 400, message: 'Missing path property'}
+  }
 
   try {
     const res = await client.getObject({
-      Key: requestBody.path,
+      Key: event.path,
       Bucket: 'draffio-code'
     }).promise();
     if (!res.Body) {
