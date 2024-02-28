@@ -1,0 +1,18 @@
+swagger: "2.0"
+info:
+  version: "1.0.0"
+  title: "Your API"
+paths:
+  /draff/{code}:
+    get:
+      summary: "Get resource by code"
+      parameters:
+        - name: code
+          in: path
+          required: true
+          type: string
+          allowReserved: true
+      responses:
+        200:
+          description: "Successful response"
+        # Add other response codes as needed  
