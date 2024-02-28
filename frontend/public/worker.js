@@ -29,6 +29,11 @@ onmessage = function (e) {
       };
     } else if (typeof result === 'symbol') {
       return { type: 'result-symbol', result: result.toString() };
+    } else if (Array.isArray(result)) {
+      return {
+        type: 'result-array',
+        result: result.map(asPassableMessage),
+      };
     } else if (
       typeof result === 'object' &&
       result !== null &&
