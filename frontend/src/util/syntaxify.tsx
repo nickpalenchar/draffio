@@ -41,7 +41,7 @@ export const asLogLevel = (input: any, level: MetaSyntox['level'] = 'log') => {
 
 export const syntaxify = (
   input: any,
-  { color }: { color?: string } = {},
+  { color, showIcon = true }: { color?: string; showIcon?: boolean } = {},
 ): React.JSX.Element => {
   console.log('parsing input', input);
 
@@ -91,7 +91,8 @@ export const syntaxify = (
       return (
         <Text as="span" className="syntax-promise">
           <Text as="span" color={COLOR}>
-            [<Icon as={IoGift} boxSize={4} marginBottom="-3px" /> Promise{' '}
+            [{showIcon && <Icon as={IoGift} boxSize={4} marginBottom="-3px" />}{' '}
+            Promise{' '}
           </Text>
           <Text color={statusColorsMap[input.state as 'Resolved']} as="span">
             ({input.state.toLowerCase()}){' '}
@@ -114,7 +115,13 @@ export const syntaxify = (
   if (typeof input === 'object' && input?.[EvalResultType] === 'function') {
     return (
       <Text color={'purple.300'} as="span" className="syntax-function">
-        [<Icon as={PiFunctionFill} boxSize={4} marginBottom={'-3px'}></Icon>{' '}
+        [
+        {showIcon && (
+          <>
+            <Icon as={PiFunctionFill} boxSize={4} marginBottom={'-3px'}></Icon>
+            <span> </span>
+          </>
+        )}
         Function: {input.name}]
       </Text>
     );
@@ -122,7 +129,8 @@ export const syntaxify = (
   if (typeof input === 'object' && input?.[EvalResultType] === 'symbol') {
     return (
       <Text color="teal.200" as="span" className="syntax-symbol">
-        <Icon as={IoFlagSharp} marginBottom="-4px" /> {input.result}
+        {showIcon && <Icon as={IoFlagSharp} marginBottom="-4px" />}
+        {input.result}
       </Text>
     );
   }

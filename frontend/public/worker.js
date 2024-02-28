@@ -21,29 +21,14 @@ onmessage = function (e) {
 
   console.log({ codeToRun: e.data });
 
-  return ((document, console) => {
-    // special events
-    let result;
-    try {
-      const codeToRun = e.data;
-      result = eval(codeToRun);
-    } catch (error) {
-      if (error?.name === 'DataCloneError') {
-        postMessage({ type: 'error', error: 'Unsupported Statement.' });
-      } else {
-        postMessage({
-          type: 'error',
-          error: error?.message || error.toString(),
-        });
-      }
-    }
+  const asPassableMessage = (result) => {
     if (typeof result === 'function') {
       this.postMessage({
         type: 'result-function',
         result: { name: result.name || '(anonymous)' },
       }); // TODO detect promise object
     } else if (typeof result === 'symbol') {
-      this.postMessage({ type: 'result-symbol', result: result.toString() });
+      return { type: 'result-symbol', result: result.toString() };
     } else if (
       typeof result === 'object' &&
       result !== null &&
@@ -53,9 +38,29 @@ onmessage = function (e) {
       result.hasOwnProperty('_deferreds') &&
       result.hasOwnProperty('repr')
     ) {
-      postMessage({ type: 'result-promise', result: result.repr() });
+      return { type: 'result-promise', result: result.repr() };
     } else {
-      postMessage({ type: 'result', result });
+      return { type: 'result', result };
+    }
+  };
+
+  return ((document, console) => {
+    // special events
+    let result;
+    try {
+      const codeToRun = e.data;
+      result = eval(codeToRun);
+
+      this.postMessage(asPassableMessage(result));
+    } catch (error) {
+      if (error?.name === 'DataCloneError') {
+        postMessage({ type: 'error', error: 'Unsupported Statement.' });
+      } else {
+        postMessage({
+          type: 'error',
+          error: error?.message || error.toString(),
+        });
+      }
     }
   })(undefined, $$$shadowConsole);
 };
