@@ -23,10 +23,10 @@ onmessage = function (e) {
 
   const asPassableMessage = (result) => {
     if (typeof result === 'function') {
-      this.postMessage({
+      return {
         type: 'result-function',
         result: { name: result.name || '(anonymous)' },
-      }); // TODO detect promise object
+      };
     } else if (typeof result === 'symbol') {
       return { type: 'result-symbol', result: result.toString() };
     } else if (
@@ -51,7 +51,8 @@ onmessage = function (e) {
       const codeToRun = e.data;
       result = eval(codeToRun);
 
-      this.postMessage(asPassableMessage(result));
+      const message = asPassableMessage(result);
+      this.postMessage(message);
     } catch (error) {
       if (error?.name === 'DataCloneError') {
         postMessage({ type: 'error', error: 'Unsupported Statement.' });
