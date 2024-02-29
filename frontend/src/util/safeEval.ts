@@ -50,6 +50,15 @@ export const safeEval = async (
         if (message.type === 'console') {
           return consoleFn?.(message.level, message.console);
         }
+        /// new stuFF
+        const migrated = ['result-string', 'result-promise', 
+          'result-number', 'result-boolean', 'result-null', 
+          'result-undefined', 'result-symbol', 'result-function', 'result-array'];
+        if (migrated.includes(message.type)) {
+          console.log('SENDING ALSONG', message)
+          return resolve(message);
+        } 
+        /// OLD STUFF
         if (message.type === 'result' || message.type === 'result-promise') {
           resolve(message.result);
         } else if (message.type === 'result-function') {
@@ -114,7 +123,7 @@ export const safeEval = async (
       pastCode.join(';\n') + `;\n${wrapped}`,
       { consoleFn },
     );
-
+    console.log('RESULT', result)
     scope.push(mutedResult);
     return result;
   } catch (e: any) {

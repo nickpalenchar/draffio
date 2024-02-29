@@ -22,13 +22,29 @@ onmessage = function (e) {
   console.log({ codeToRun: e.data });
 
   const asPassableMessage = (result) => {
+    if (typeof result === 'string') {
+      return { type: 'result-string', result };
+    }
+    if (typeof result === 'number') {
+      return { type: 'result-number', result };
+    }
+    if (typeof result === 'boolean') {
+      return { type: 'result-boolean', result };
+    }
+    if (typeof result === 'object' && result === null) {
+      return { type: 'result-null', result };
+    }
+    if (typeof result === 'undefined') {
+      return { type: 'result-undefined' };
+    }
+    if (typeof result === 'symbol') {
+      return { type: 'result-symbol', result: result.toString() };
+    }
     if (typeof result === 'function') {
       return {
         type: 'result-function',
         result: { name: result.name || '(anonymous)' },
       };
-    } else if (typeof result === 'symbol') {
-      return { type: 'result-symbol', result: result.toString() };
     } else if (Array.isArray(result)) {
       return {
         type: 'result-array',
