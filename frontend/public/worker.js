@@ -6,7 +6,6 @@ $globals[REAL_PROMISE] = Promise;
 importScripts('/promise.polyfill.js');
 
 onmessage = function (e) {
-  console.log('DATA', e.data);
   const C = Symbol('console');
   const c = { [C]: console };
   let $$$consoleOn = true;
