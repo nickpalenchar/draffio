@@ -141,6 +141,14 @@ export const syntaxify = (
         </Text>
       );
     }
+    if (input.type === 'result-date') {
+      return (
+        <Text as="span" className="syntax-date">
+          <Meta>[Date] </Meta>
+          {input.result}
+        </Text>
+      );
+    }
     if (input.type === 'result-array') {
       return (
         <Text as="span" className="syntax-array">
@@ -191,55 +199,6 @@ export const syntaxify = (
         </Text>
       );
     }
-
-    /// MOSTLY OLD BELOW
-    if (typeof input === 'object' && input?.type === 'result-promise') {
-      const statusColorsMap = {
-        Resolved: 'lime',
-        Rejected: 'red',
-        Pending: 'yellow',
-        Settled: 'grey',
-      };
-      const COLOR = 'pink.200';
-      // return (
-      //   <Text as="span" className="syntax-promise">
-      //     <Text as="span" color={COLOR}>
-      //       {' '}
-      //       [{showIcon && (
-      //         <Icon as={IoGift} boxSize={4} marginBottom="-3px" />
-      //       )}{' '}
-      //     </Text>
-      //     <Text
-      //       color={statusColorsMap[input.result.state as 'Resolved']}
-      //       as="span"
-      //     >
-      //       ({input.result.state.toLowerCase()}){' '}
-      //     </Text>
-      //   </Text>
-      // );
-      return (
-        <Text as="span" className="syntax-promise">
-          <Text as="span" color={COLOR}>
-            [{showIcon && <Icon as={IoGift} boxSize={4} marginBottom="-3px" />}{' '}
-            Promise{' '}
-          </Text>
-          <Text
-            color={statusColorsMap[input.result.state as 'Resolved']}
-            as="span"
-          >
-            ({input.result.state.toLowerCase()}){' '}
-          </Text>
-          <Text as="span" color={COLOR}>
-            value:{' '}
-          </Text>
-          {syntaxify(input.result.value)}
-          <Text as="span" color={COLOR}>
-            {' '}
-            ]
-          </Text>
-        </Text>
-      );
-    }
   } catch (e) {
     // noop
   }
@@ -250,15 +209,6 @@ export const syntaxify = (
     return (
       <Text color={'red'} as="span" className="syntax-error">
         {input.toString()}
-      </Text>
-    );
-  }
-
-  if (input instanceof Date) {
-    return (
-      <Text as="span" className="syntax-date">
-        <Meta>[Date] </Meta>
-        {input.toJSON()}
       </Text>
     );
   }

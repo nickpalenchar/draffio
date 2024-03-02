@@ -51,6 +51,11 @@ onmessage = function (e) {
         type: 'result-function',
         result: { name: result.name || '(anonymous)' },
       };
+    } else if (result instanceof Date) {
+      return {
+        type: 'result-date',
+        result: result.toJSON(),
+      };
     } else if (Array.isArray(result)) {
       return {
         type: 'result-array',
@@ -69,7 +74,6 @@ onmessage = function (e) {
       // NOTE! This *must* be 2nd to last since we need to detect all
       // overlaps of objects (null, Array, Promise) first.
     } else if (typeof result === 'object') {
-      c[C].log('OBJECT', Object.entries(result));
       const symbols = Object.getOwnPropertySymbols(result).map((symbol) => {
         return {
           key: {

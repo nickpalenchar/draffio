@@ -62,24 +62,16 @@ export const safeEval = async (
           'result-function',
           'result-array',
           'result-object',
+          'result-date'
         ];
         if (migrated.includes(message.type)) {
           return resolve(message);
         }
-        /// OLD STUFF
-        if (message.type === 'result' || message.type === 'result-promise') {
-          resolve(message.result);
-        } else if (message.type === 'result-function') {
-          resolve({ [EvalResultType]: 'function', name: message.result.name });
-        } else if (message.type === 'result-symbol') {
-          resolve({ [EvalResultType]: 'symbol', result: message.result });
-        } else if (message.type === 'error') {
-          reject(new Error(message.error));
-        } else {
-          reject(new Error(`Unknown message type ${message.type}`));
+        if (message.type === 'error') {
+          return reject(message.error)
         }
+        return reject('Uncaught type: ' + JSON.stringify(message));
       };
-      // Post the code to the worker
       worker.postMessage(code);
     });
   };
