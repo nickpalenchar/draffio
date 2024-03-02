@@ -149,6 +149,36 @@ export const syntaxify = (
         </Text>
       );
     }
+    if (input.type === 'result-promise') {
+      const statusColorsMap = {
+        Resolved: 'lime',
+        Rejected: 'red',
+        Pending: 'yellow',
+        Settled: 'grey',
+      };
+      const COLOR = 'pink.200';
+      return (
+        <Text as="span" className="syntax-promise">
+          <Text as="span" color={COLOR}>
+            [<Icon as={IoGift} boxSize={4} marginBottom="-3px" /> Promise{' '}
+          </Text>
+          <Text
+            color={statusColorsMap[input.result.state as 'Resolved']}
+            as="span"
+          >
+            ({input.result.state.toLowerCase()}){' '}
+          </Text>
+          <Text as="span" color={COLOR}>
+            value:{' '}
+          </Text>
+          {syntaxify(input.result.value)}
+          <Text as="span" color={COLOR}>
+            {' '}
+            ]
+          </Text>
+        </Text>
+      );
+    }
     if (input.type === 'result-array') {
       return (
         <Text as="span" className="syntax-array">

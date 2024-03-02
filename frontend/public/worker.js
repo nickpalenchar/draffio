@@ -1,5 +1,10 @@
+const $globals = {};
+const REAL_PROMISE = Symbol('RealPromise');
+$globals[REAL_PROMISE] = Promise;
+
 // eslint-disable-next-line no-undef
 importScripts('/promise.polyfill.js');
+
 onmessage = function (e) {
   console.log('DATA', e.data);
   const C = Symbol('console');
@@ -26,7 +31,6 @@ onmessage = function (e) {
   const $$$setConsole = (state) => ($$$consoleOn = state);
 
   console.log({ codeToRun: e.data });
-
   const asPassableMessage = (result) => {
     if (typeof result === 'string') {
       return { type: 'result-string', result };
@@ -70,9 +74,17 @@ onmessage = function (e) {
       result.hasOwnProperty('_deferreds') &&
       result.hasOwnProperty('repr')
     ) {
+      const promiseClone = result.repr();
+      promiseClone.value = asPassableMessage(promiseClone.value);
       return { type: 'result-promise', result: result.repr() };
       // NOTE! This *must* be 2nd to last since we need to detect all
       // overlaps of objects (null, Array, Promise) first.
+    } else if (result instanceof $globals[REAL_PROMISE]) {
+      const promiseClone = new Promise((resolve, reject) => {
+        result.then(resolve).catch(reject);
+      }).repr();
+      promiseClone.value = asPassableMessage(promiseClone.value);
+      return { type: 'result-promise', result: promiseClone };
     } else if (typeof result === 'object') {
       const symbols = Object.getOwnPropertySymbols(result).map((symbol) => {
         return {
