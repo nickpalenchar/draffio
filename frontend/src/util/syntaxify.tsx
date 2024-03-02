@@ -155,6 +155,40 @@ export const syntaxify = (
         </Text>
       );
     }
+    if (input.type === 'result-object') {
+      console.log('got to relut ab', input);
+      return (
+        <Text as="span" className="syntax-object">
+          {'{ '}
+          {input.result.map((entry: any, i: number, arr: Array<any>) => {
+            console.log('MAPPING', entry);
+            return (
+              <>
+                <Text as="span" className="syntax-object-key">
+                  {entry.key.keyType === 'symbol' ? (
+                    <>
+                      [
+                      <Text as="span" color="teal.200">
+                        {entry.key.keyValue}
+                      </Text>
+                      ]
+                    </>
+                  ) : (
+                    entry.key.keyValue
+                  )}
+                  :{' '}
+                </Text>
+                <Text as="span" className="syntax-object-value">
+                  {syntaxify(entry.value)}
+                  {i < arr.length - 1 && ', '}
+                </Text>
+              </>
+            );
+          })}
+          {' }'}
+        </Text>
+      );
+    }
 
     /// MOSTLY OLD BELOW
     if (typeof input === 'object' && input?.type === 'result-promise') {
@@ -242,28 +276,6 @@ export const syntaxify = (
     //noop
   }
 
-  // TODO object
-  if (input instanceof Object) {
-    return (
-      <Text as="span" className="syntax-object">
-        {'{ '}
-        {Object.entries(input).map(([key, value], i, arr) => {
-          return (
-            <>
-              <Text as="span" className="syntax-object-key">
-                {key}:{' '}
-              </Text>
-              <Text as="span" className="syntax-object-value">
-                {syntaxify(value, { color }) as string | React.JSX.Element}
-                {i < arr.length - 1 && ', '}
-              </Text>
-            </>
-          );
-        })}
-        {' }'}
-      </Text>
-    );
-  }
   return (
     <Text as="span" className="syntax-unknown">
       {input.toString()}

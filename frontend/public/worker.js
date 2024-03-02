@@ -2,6 +2,8 @@
 importScripts('/promise.polyfill.js');
 onmessage = function (e) {
   console.log('DATA', e.data);
+  const C = Symbol('console');
+  const c = { [C]: console };
   let $$$consoleOn = true;
   const $$$shadowConsole = {
     log(...args) {
@@ -60,6 +62,40 @@ onmessage = function (e) {
       result.hasOwnProperty('repr')
     ) {
       return { type: 'result-promise', result: result.repr() };
+      // NOTE! This *must* be 2nd to last since we need to detect all
+      // overlaps of objects (null, Array, Promise) first.
+    } else if (typeof result === 'object') {
+      c[C].log('OBJECT', Object.entries(result));
+      const symbols = Object.getOwnPropertySymbols(result).map((symbol) => {
+        return {
+          key: {
+            keyType: 'symbol',
+            keyValue: symbol.toString(),
+          },
+          value: asPassableMessage(result[symbol]),
+        };
+      });
+      return {
+        type: 'result-object',
+        result: [
+          ...symbols,
+          ...Object.entries(result).map(([key, value]) => {
+            const keyMessage = asPassableMessage(key);
+            const valueMessage = asPassableMessage(value);
+
+            if (keyMessage.result === 'result-symbol') {
+              return {
+                key: { keyType: 'symbol', keyValue: keyMessage },
+                value: valueMessage,
+              };
+            }
+            return {
+              key: { keyType: 'string', keyValue: keyMessage.result },
+              value: valueMessage,
+            };
+          }),
+        ],
+      };
     } else {
       return { type: 'result', result };
     }
@@ -73,6 +109,7 @@ onmessage = function (e) {
       result = eval(codeToRun);
 
       const message = asPassableMessage(result);
+      c[C].log('message becomes', message);
       this.postMessage(message);
     } catch (error) {
       if (error?.name === 'DataCloneError') {
