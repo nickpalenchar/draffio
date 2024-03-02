@@ -32,7 +32,6 @@ export const asPlainText = (input: any) => {
   return { [MetaType]: 'plaintext', [MetaValue]: input.toString() };
 };
 export const asLogLevel = (input: any, level: MetaSyntox['level'] = 'log') => {
-  console.log('asConsole', { input, level });
   if (typeof input === 'object' && input !== null && input[MetaType]) {
     return { [MetaType]: 'console', [MetaValue]: input[MetaValue], level };
   }
@@ -64,6 +63,7 @@ export const syntaxify = (
         error: ['red.500', <WarningIcon color="red.900" marginRight="4px" />],
       };
       const [tagColor, icon] = levels[input.level as 'log'];
+      const Syntax = () => syntaxify(input[MetaValue], { color: 'grey.200' });
       return (
         <Text className="syntax-console" as="span">
           <Tag
@@ -76,7 +76,9 @@ export const syntaxify = (
             <TagRightIcon>{icon}</TagRightIcon>
             <TagLabel>log</TagLabel>
           </Tag>
-          <Meta>{syntaxify(input[MetaValue], { color: 'gray.300' })}</Meta>
+          <Meta>
+            <Syntax />
+          </Meta>
         </Text>
       );
     }

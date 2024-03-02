@@ -96,7 +96,7 @@ export const Terminal: FC<TerminalProps> = ({
   const processLine = async (input: string) => {
     const logLines: any[] = [];
     const consoleFn: ConsoleFn = (level, args) => {
-      logLines.push(asLogLevel(syntaxify(args[0]), level));
+      logLines.push(asLogLevel(args[0], level));
     };
     const output = await safeEval(input, { consoleFn });
     if (

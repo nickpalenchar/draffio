@@ -8,7 +8,11 @@ onmessage = function (e) {
   const $$$shadowConsole = {
     log(...args) {
       $$$consoleOn &&
-        void postMessage({ type: 'console', console: args, level: 'log' });
+        void postMessage({
+          type: 'console',
+          console: args.map(asPassableMessage),
+          level: 'log',
+        });
     },
     warn(...args) {
       $$$consoleOn &&
