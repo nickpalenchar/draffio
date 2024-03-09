@@ -18,7 +18,7 @@ import { EditorView, basicSetup } from 'codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { Terminal } from '../components/Terminal';
 import { Editor } from '../components/Editor';
-import { ConsoleFn, safeEval } from '../util/safeEval';
+import { CallbackFn, ConsoleFn, safeEval } from '../util/safeEval';
 import {
   MetaSyntox,
   asLogLevel,
@@ -37,6 +37,8 @@ const defaultLines = [
     .split('\n')
     .map((line) => syntaxify(asPlainText(line))),
 ];
+
+const timeouts: Record<number, number> = {};
 
 export const Draff = () => {
   const editorRef = useRef<HTMLDivElement>(null);
@@ -62,15 +64,20 @@ export const Draff = () => {
   }, []);
 
   const onExecute = async (code: string, clearScope?: boolean) => {
-    setTermLines([]);
+    if (clearScope) {
+      setTermLines([]);
+    }
     const logLines: React.JSX.Element[] = [];
     const consoleFn: ConsoleFn = (level: any, args: any[]) => {
-      console.log('pushing lines', args);
       logLines.push(syntaxify(asLogLevel(args[0], level)));
     };
-    const callbackFn = (...args: any[]) => {
-      console.log(args);
-      alert('got the callback yo');
+    const callbackFn: CallbackFn = (type, callback, interval) => {
+      console.log('got it', { type, callback, interval });
+      if (type === 'timeout') {
+        setTimeout(() => {
+          onExecute(`(${callback})()`, false);
+        }, interval);
+      }
     };
     const output = await safeEval(code, {
       consoleFn,

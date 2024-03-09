@@ -13,7 +13,7 @@ export class BlockedBySandbox extends Error {
 }
 type ConsoleLevels = 'log' | 'warn' | 'error';
 export type ConsoleFn = (level: ConsoleLevels, args: any[]) => void;
-export type CallbackFn = ((type: 'timeout' | 'interval' | 'clear', callback: CallableFunction, interval: number) => void);
+export type CallbackFn = ((type: 'timeout' | 'interval' | 'clear', callback: string, interval: number) => void);
 interface SafeEvalOptions {
   consoleFn?: ConsoleFn;
   callbackFn?: CallbackFn;
@@ -53,6 +53,9 @@ export const safeEval = async (
           return consoleFn?.(message.level, message.console);
         }
         if (message.type === 'callback') {
+          if (callbackFn) {
+            
+          }
           return callbackFn?.(message.callbackType, message.functionData, message.timeout);
         }
         /// new stuFF
@@ -81,32 +84,6 @@ export const safeEval = async (
     });
   };
 
-  /** silences (voids) statement so it doesn't return something, if applicable */
-  const _mute = async (input: string) => {
-    // TODO this might not be needed
-    return input;
-    const trimmed = input.trim();
-    if (
-      trimmed.startsWith('let') ||
-      trimmed.startsWith('const') ||
-      trimmed.startsWith('var') ||
-      trimmed.startsWith('function') ||
-      trimmed.startsWith('async') ||
-      trimmed.startsWith('undefined') ||
-      trimmed.startsWith('void') ||
-      trimmed.startsWith(';') ||
-      !trimmed
-    ) {
-      return input;
-    }
-    try {
-      await executeCodeInWorker(`void ${input}`);
-      return `void ${input}`;
-    } catch {
-      return input;
-    }
-  };
-
   /// code execution ///
   try {
     // detect clear event
@@ -123,12 +100,11 @@ export const safeEval = async (
       'void $$$setConsole(true)',
     ];
     const wrapped = _safeWrap(input);
-    const mutedResult = await _mute(wrapped);
     const result = await executeCodeInWorker(
       pastCode.join(';\n') + `;\n${wrapped}`,
       { consoleFn },
     );
-    scope.push(mutedResult);
+    scope.push(wrapped);
     return result;
   } catch (e: any) {
     if (e instanceof Error) {
