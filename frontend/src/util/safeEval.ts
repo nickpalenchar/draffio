@@ -13,7 +13,11 @@ export class BlockedBySandbox extends Error {
 }
 type ConsoleLevels = 'log' | 'warn' | 'error';
 export type ConsoleFn = (level: ConsoleLevels, args: any[]) => void;
-export type CallbackFn = ((type: 'timeout' | 'interval' | 'clear', callback: string, interval: number) => void);
+export type CallbackFn = (
+  type: 'timeout' | 'interval' | 'clear',
+  callback: string,
+  interval: number,
+) => void;
 interface SafeEvalOptions {
   consoleFn?: ConsoleFn;
   callbackFn?: CallbackFn;
@@ -54,9 +58,12 @@ export const safeEval = async (
         }
         if (message.type === 'callback') {
           if (callbackFn) {
-            
           }
-          return callbackFn?.(message.callbackType, message.functionData, message.timeout);
+          return callbackFn?.(
+            message.callbackType,
+            message.functionData,
+            message.timeout,
+          );
         }
         /// new stuFF
         const migrated = [

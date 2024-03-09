@@ -28,7 +28,7 @@ import {
 
 const defaultLines = [
   ...`       ,"-.
-       ||~'    Draff JS REPL v00.1 (incomplete)
+       ||~'    Draff JS REPL v00.2 (incomplete)
     ___||         copyright (c) 2024 draff.io
    ,(.:')
     || ||
@@ -63,7 +63,11 @@ export const Draff = () => {
     return () => editor.destroy();
   }, []);
 
-  const onExecute = async (code: string, clearScope?: boolean) => {
+  const onExecute = async (
+    code: string,
+    clearScope?: boolean,
+    voidRun?: boolean,
+  ) => {
     if (clearScope) {
       setTermLines([]);
     }

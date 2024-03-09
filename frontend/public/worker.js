@@ -126,6 +126,9 @@ onmessage = function (e) {
     if (typeof cb !== 'function') {
       return;
     }
+    if (!$$$consoleOn) {
+      return;
+    }
     const serializedFunction = cb.toString();
     this.postMessage({
       type: 'callback',
