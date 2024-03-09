@@ -68,8 +68,13 @@ export const Draff = () => {
       console.log('pushing lines', args);
       logLines.push(syntaxify(asLogLevel(args[0], level)));
     };
+    const callbackFn = (...args: any[]) => {
+      console.log(args);
+      alert('got the callback yo');
+    };
     const output = await safeEval(code, {
       consoleFn,
+      callbackFn,
       clearHistory: clearScope,
     });
     setTermLines([...logLines, syntaxify(output)]);

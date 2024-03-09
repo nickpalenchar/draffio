@@ -1,12 +1,7 @@
 import React, { useState, useEffect, useRef, FC } from 'react';
 import { Box } from '@chakra-ui/react';
 import { ConsoleFn, EvalResultType, safeEval } from '../util/safeEval';
-import {
-  MetaSyntox,
-  asLogLevel,
-  asPlainText,
-  syntaxify,
-} from '../util/syntaxify';
+import { MetaSyntox, asLogLevel, asPlainText } from '../util/syntaxify';
 
 interface TerminalProps {
   lines: any[];

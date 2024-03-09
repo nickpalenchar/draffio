@@ -13,8 +13,10 @@ export class BlockedBySandbox extends Error {
 }
 type ConsoleLevels = 'log' | 'warn' | 'error';
 export type ConsoleFn = (level: ConsoleLevels, args: any[]) => void;
+export type CallbackFn = ((type: 'timeout' | 'interval' | 'clear', callback: CallableFunction, interval: number) => void);
 interface SafeEvalOptions {
   consoleFn?: ConsoleFn;
+  callbackFn?: CallbackFn;
   clearHistory?: boolean;
 }
 
@@ -31,7 +33,7 @@ const worker = new Worker('/worker.js');
 
 export const safeEval = async (
   input: string,
-  { consoleFn, clearHistory = false }: SafeEvalOptions = {},
+  { consoleFn, callbackFn, clearHistory = false }: SafeEvalOptions = {},
 ): Promise<any> => {
   console.log('calling', { input });
 
@@ -50,6 +52,9 @@ export const safeEval = async (
         if (message.type === 'console') {
           return consoleFn?.(message.level, message.console);
         }
+        if (message.type === 'callback') {
+          return callbackFn?.(message.callbackType, message.functionData, message.timeout);
+        }
         /// new stuFF
         const migrated = [
           'result-string',
@@ -62,13 +67,13 @@ export const safeEval = async (
           'result-function',
           'result-array',
           'result-object',
-          'result-date'
+          'result-date',
         ];
         if (migrated.includes(message.type)) {
           return resolve(message);
         }
         if (message.type === 'error') {
-          return reject(message.error)
+          return reject(message.error);
         }
         return reject('Uncaught type: ' + JSON.stringify(message));
       };

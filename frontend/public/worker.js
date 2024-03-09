@@ -6,29 +6,6 @@ $globals[REAL_PROMISE] = Promise;
 importScripts('/promise.polyfill.js');
 
 onmessage = function (e) {
-  const C = Symbol('console');
-  const c = { [C]: console };
-  let $$$consoleOn = true;
-  const $$$shadowConsole = {
-    log(...args) {
-      $$$consoleOn &&
-        void postMessage({
-          type: 'console',
-          console: args.map(asPassableMessage),
-          level: 'log',
-        });
-    },
-    warn(...args) {
-      $$$consoleOn &&
-        void postMessage({ type: 'console', console: args, level: 'warn' });
-    },
-    error(...args) {
-      $$$consoleOn &&
-        void postMessage({ type: 'console', console: args, level: 'error' });
-    },
-  };
-  const $$$setConsole = (state) => ($$$consoleOn = state);
-
   console.log({ codeToRun: e.data });
   const asPassableMessage = (result) => {
     if (typeof result === 'string') {
@@ -120,7 +97,45 @@ onmessage = function (e) {
     }
   };
 
-  return ((document, console) => {
+  const C = Symbol('console');
+  const SET_TIMEOUT = Symbol();
+  const SET_INTERVAL = Symbol();
+  const CLEAR_INTERVAL = Symbol();
+  const ext = { [C]: console, [SET_INTERVAL]: setInterval };
+  let $$$consoleOn = true;
+  const $$$shadowConsole = {
+    log(...args) {
+      $$$consoleOn &&
+        void postMessage({
+          type: 'console',
+          console: args.map(asPassableMessage),
+          level: 'log',
+        });
+    },
+    warn(...args) {
+      $$$consoleOn &&
+        void postMessage({ type: 'console', console: args, level: 'warn' });
+    },
+    error(...args) {
+      $$$consoleOn &&
+        void postMessage({ type: 'console', console: args, level: 'error' });
+    },
+  };
+  const $$$setConsole = (state) => ($$$consoleOn = state);
+  const $$$setTimeout = (cb, timeout) => {
+    if (typeof cb !== 'function') {
+      return;
+    }
+    const serializedFunction = cb.toString();
+    this.postMessage({
+      type: 'callback',
+      callbackType: 'timeout',
+      functionData: serializedFunction,
+      timeout,
+    });
+  };
+
+  return ((document, console, setTimeout) => {
     // special events
     let result;
     try {
@@ -128,7 +143,7 @@ onmessage = function (e) {
       result = eval(codeToRun);
 
       const message = asPassableMessage(result);
-      c[C].log('message becomes', message);
+      ext[C].log('message becomes', message);
       this.postMessage(message);
     } catch (error) {
       if (error?.name === 'DataCloneError') {
@@ -140,5 +155,5 @@ onmessage = function (e) {
         });
       }
     }
-  })(undefined, $$$shadowConsole);
+  })(undefined, $$$shadowConsole, $$$setTimeout);
 };
