@@ -18,7 +18,7 @@ import { EditorView, basicSetup } from 'codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { Terminal } from '../components/Terminal';
 import { Editor } from '../components/Editor';
-import { ConsoleFn, safeEval } from '../util/safeEval';
+import { CallbackFn, ConsoleFn, safeEval } from '../util/safeEval';
 import {
   MetaSyntox,
   asLogLevel,
@@ -28,7 +28,7 @@ import {
 
 const defaultLines = [
   ...`       ,"-.
-       ||~'    Draff JS REPL v00.1 (incomplete)
+       ||~'    Draff JS REPL v00.2 (incomplete)
     ___||         copyright (c) 2024 draff.io
    ,(.:')
     || ||
@@ -37,6 +37,8 @@ const defaultLines = [
     .split('\n')
     .map((line) => syntaxify(asPlainText(line))),
 ];
+
+const timeouts: Record<number, number> = {};
 
 export const Draff = () => {
   const editorRef = useRef<HTMLDivElement>(null);
@@ -61,15 +63,29 @@ export const Draff = () => {
     return () => editor.destroy();
   }, []);
 
-  const onExecute = async (code: string, clearScope?: boolean) => {
-    setTermLines([]);
+  const onExecute = async (
+    code: string,
+    clearScope?: boolean,
+    voidRun?: boolean,
+  ) => {
+    if (clearScope) {
+      setTermLines([]);
+    }
     const logLines: React.JSX.Element[] = [];
     const consoleFn: ConsoleFn = (level: any, args: any[]) => {
-      console.log('pushing lines', args);
       logLines.push(syntaxify(asLogLevel(args[0], level)));
+    };
+    const callbackFn: CallbackFn = (type, callback, interval) => {
+      console.log('got it', { type, callback, interval });
+      if (type === 'timeout') {
+        setTimeout(() => {
+          onExecute(`(${callback})()`, false);
+        }, interval);
+      }
     };
     const output = await safeEval(code, {
       consoleFn,
+      callbackFn,
       clearHistory: clearScope,
     });
     setTermLines([...logLines, syntaxify(output)]);

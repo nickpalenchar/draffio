@@ -13,8 +13,14 @@ export class BlockedBySandbox extends Error {
 }
 type ConsoleLevels = 'log' | 'warn' | 'error';
 export type ConsoleFn = (level: ConsoleLevels, args: any[]) => void;
+export type CallbackFn = (
+  type: 'timeout' | 'interval' | 'clear',
+  callback: string,
+  interval: number,
+) => void;
 interface SafeEvalOptions {
   consoleFn?: ConsoleFn;
+  callbackFn?: CallbackFn;
   clearHistory?: boolean;
 }
 
@@ -31,7 +37,7 @@ const worker = new Worker('/worker.js');
 
 export const safeEval = async (
   input: string,
-  { consoleFn, clearHistory = false }: SafeEvalOptions = {},
+  { consoleFn, callbackFn, clearHistory = false }: SafeEvalOptions = {},
 ): Promise<any> => {
   console.log('calling', { input });
 
@@ -50,47 +56,39 @@ export const safeEval = async (
         if (message.type === 'console') {
           return consoleFn?.(message.level, message.console);
         }
-        if (message.type === 'result' || message.type === 'result-promise') {
-          resolve(message.result);
-        } else if (message.type === 'result-function') {
-          resolve({ [EvalResultType]: 'function', name: message.result.name });
-        } else if (message.type === 'result-symbol') {
-          resolve({ [EvalResultType]: 'symbol', result: message.result });
-        } else if (message.type === 'error') {
-          reject(new Error(message.error));
-        } else {
-          reject(new Error(`Unknown message type ${message.type}`));
+        if (message.type === 'callback') {
+          if (callbackFn) {
+          }
+          return callbackFn?.(
+            message.callbackType,
+            message.functionData,
+            message.timeout,
+          );
         }
+        /// new stuFF
+        const migrated = [
+          'result-string',
+          'result-promise',
+          'result-number',
+          'result-boolean',
+          'result-null',
+          'result-undefined',
+          'result-symbol',
+          'result-function',
+          'result-array',
+          'result-object',
+          'result-date',
+        ];
+        if (migrated.includes(message.type)) {
+          return resolve(message);
+        }
+        if (message.type === 'error') {
+          return reject(message.error);
+        }
+        return reject('Uncaught type: ' + JSON.stringify(message));
       };
-      // Post the code to the worker
       worker.postMessage(code);
     });
-  };
-
-  /** silences (voids) statement so it doesn't return something, if applicable */
-  const _mute = async (input: string) => {
-    // TODO this might not be needed
-    return input;
-    const trimmed = input.trim();
-    if (
-      trimmed.startsWith('let') ||
-      trimmed.startsWith('const') ||
-      trimmed.startsWith('var') ||
-      trimmed.startsWith('function') ||
-      trimmed.startsWith('async') ||
-      trimmed.startsWith('undefined') ||
-      trimmed.startsWith('void') ||
-      trimmed.startsWith(';') ||
-      !trimmed
-    ) {
-      return input;
-    }
-    try {
-      await executeCodeInWorker(`void ${input}`);
-      return `void ${input}`;
-    } catch {
-      return input;
-    }
   };
 
   /// code execution ///
@@ -109,13 +107,11 @@ export const safeEval = async (
       'void $$$setConsole(true)',
     ];
     const wrapped = _safeWrap(input);
-    const mutedResult = await _mute(wrapped);
     const result = await executeCodeInWorker(
       pastCode.join(';\n') + `;\n${wrapped}`,
       { consoleFn },
     );
-
-    scope.push(mutedResult);
+    scope.push(wrapped);
     return result;
   } catch (e: any) {
     if (e instanceof Error) {

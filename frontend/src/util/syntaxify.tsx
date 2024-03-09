@@ -32,7 +32,6 @@ export const asPlainText = (input: any) => {
   return { [MetaType]: 'plaintext', [MetaValue]: input.toString() };
 };
 export const asLogLevel = (input: any, level: MetaSyntox['level'] = 'log') => {
-  console.log('asConsole', { input, level });
   if (typeof input === 'object' && input !== null && input[MetaType]) {
     return { [MetaType]: 'console', [MetaValue]: input[MetaValue], level };
   }
@@ -41,7 +40,7 @@ export const asLogLevel = (input: any, level: MetaSyntox['level'] = 'log') => {
 
 export const syntaxify = (
   input: any,
-  { color }: { color?: string } = {},
+  { color, showIcon = true }: { color?: string; showIcon?: boolean } = {},
 ): React.JSX.Element => {
   console.log('parsing input', input);
 
@@ -64,6 +63,7 @@ export const syntaxify = (
         error: ['red.500', <WarningIcon color="red.900" marginRight="4px" />],
       };
       const [tagColor, icon] = levels[input.level as 'log'];
+      const Syntax = () => syntaxify(input[MetaValue], { color: 'grey.200' });
       return (
         <Text className="syntax-console" as="span">
           <Tag
@@ -76,11 +76,80 @@ export const syntaxify = (
             <TagRightIcon>{icon}</TagRightIcon>
             <TagLabel>log</TagLabel>
           </Tag>
-          <Meta>{syntaxify(input[MetaValue], { color: 'gray.300' })}</Meta>
+          <Meta>
+            <Syntax />
+          </Meta>
         </Text>
       );
     }
-    if (typeof input === 'object' && input !== null && input.___isPromise) {
+
+    /// primitives ///
+    if (input?.type === 'result-string') {
+      return (
+        <Text
+          className="syntax-string"
+          as="span"
+          color={color || 'yellow.200'}
+        >{`"${input.result.replace('"', '\\"')}"`}</Text>
+      );
+    }
+    if (input?.type === 'result-number') {
+      return (
+        <Text className="syntax-number" as="span" color={color || 'blue.200'}>
+          {input.result}
+        </Text>
+      );
+    }
+    if (input.type === 'result-boolean') {
+      return (
+        <Text className="syntax-boolean" as="span" color={color || 'green.300'}>
+          {input.result.toString()}
+        </Text>
+      );
+    }
+    if (input.type === 'result-null') {
+      return <Meta>null</Meta>;
+    }
+    if (input.type === 'result-undefined') {
+      return <Meta>undefined</Meta>;
+    }
+
+    /// complex types
+    if (input.type === 'result-symbol') {
+      return (
+        <Text color="teal.200" as="span" className="syntax-symbol">
+          {showIcon && <Icon as={IoFlagSharp} marginBottom="-4px" />}
+          {input.result}
+        </Text>
+      );
+    }
+    if (input.type === 'result-function') {
+      return (
+        <Text color={'purple.300'} as="span" className="syntax-function">
+          [
+          {showIcon && (
+            <>
+              <Icon
+                as={PiFunctionFill}
+                boxSize={4}
+                marginBottom={'-3px'}
+              ></Icon>
+              <span> </span>
+            </>
+          )}
+          Function: {input.result.name}]
+        </Text>
+      );
+    }
+    if (input.type === 'result-date') {
+      return (
+        <Text as="span" className="syntax-date">
+          <Meta>[Date] </Meta>
+          {input.result}
+        </Text>
+      );
+    }
+    if (input.type === 'result-promise') {
       const statusColorsMap = {
         Resolved: 'lime',
         Rejected: 'red',
@@ -93,13 +162,16 @@ export const syntaxify = (
           <Text as="span" color={COLOR}>
             [<Icon as={IoGift} boxSize={4} marginBottom="-3px" /> Promise{' '}
           </Text>
-          <Text color={statusColorsMap[input.state as 'Resolved']} as="span">
-            ({input.state.toLowerCase()}){' '}
+          <Text
+            color={statusColorsMap[input.result.state as 'Resolved']}
+            as="span"
+          >
+            ({input.result.state.toLowerCase()}){' '}
           </Text>
           <Text as="span" color={COLOR}>
             value:{' '}
           </Text>
-          {syntaxify(input.value)}
+          {syntaxify(input.result.value)}
           <Text as="span" color={COLOR}>
             {' '}
             ]
@@ -107,83 +179,66 @@ export const syntaxify = (
         </Text>
       );
     }
+    if (input.type === 'result-array') {
+      return (
+        <Text as="span" className="syntax-array">
+          [
+          {input.result.map((out: any, i: number, arr: Array<any>) => (
+            <>
+              <Text as="span">
+                {syntaxify(out, { color }) as string | React.JSX.Element}
+              </Text>
+              {i < arr.length - 1 && ', '}
+            </>
+          ))}
+          ]
+        </Text>
+      );
+    }
+    if (input.type === 'result-object') {
+      console.log('got to relut ab', input);
+      return (
+        <Text as="span" className="syntax-object">
+          {'{ '}
+          {input.result.map((entry: any, i: number, arr: Array<any>) => {
+            console.log('MAPPING', entry);
+            return (
+              <>
+                <Text as="span" className="syntax-object-key">
+                  {entry.key.keyType === 'symbol' ? (
+                    <>
+                      [
+                      <Text as="span" color="teal.200">
+                        {entry.key.keyValue}
+                      </Text>
+                      ]
+                    </>
+                  ) : (
+                    entry.key.keyValue
+                  )}
+                  :{' '}
+                </Text>
+                <Text as="span" className="syntax-object-value">
+                  {syntaxify(entry.value)}
+                  {i < arr.length - 1 && ', '}
+                </Text>
+              </>
+            );
+          })}
+          {' }'}
+        </Text>
+      );
+    }
   } catch (e) {
     // noop
   }
+
   // native types that need to be reconstructed (can't be cloned from worker)
-  if (typeof input === 'object' && input?.[EvalResultType] === 'function') {
-    return (
-      <Text color={'purple.300'} as="span" className="syntax-function">
-        [<Icon as={PiFunctionFill} boxSize={4} marginBottom={'-3px'}></Icon>{' '}
-        Function: {input.name}]
-      </Text>
-    );
-  }
-  if (typeof input === 'object' && input?.[EvalResultType] === 'symbol') {
-    return (
-      <Text color="teal.200" as="span" className="syntax-symbol">
-        <Icon as={IoFlagSharp} marginBottom="-4px" /> {input.result}
-      </Text>
-    );
-  }
+
   if (input instanceof Error) {
     return (
       <Text color={'red'} as="span" className="syntax-error">
         {input.toString()}
-      </Text>
-    );
-  }
-
-  if (input === undefined) {
-    return <Meta>undefined</Meta>;
-  }
-  if (input === null) {
-    return <Meta>null</Meta>;
-  }
-  if (typeof input === 'string') {
-    return (
-      <Text
-        className="syntax-string"
-        as="span"
-        color={color || 'yellow.200'}
-      >{`"${input.replace('"', '\\"')}"`}</Text>
-    );
-  }
-  if (typeof input === 'number') {
-    return (
-      <Text className="syntax-number" as="span" color={color || 'blue.200'}>
-        {input}
-      </Text>
-    );
-  }
-  if (typeof input === 'boolean') {
-    return (
-      <Text className="syntax-boolean" as="span" color={color || 'green.300'}>
-        {input.toString()}
-      </Text>
-    );
-  }
-  if (Array.isArray(input)) {
-    return (
-      <Text as="span" className="syntax-array">
-        [
-        {input.map((out, i, arr) => (
-          <>
-            <Text as="span">
-              {syntaxify(out, { color }) as string | React.JSX.Element}
-            </Text>
-            {i < arr.length - 1 && ', '}
-          </>
-        ))}
-        ]
-      </Text>
-    );
-  }
-  if (input instanceof Date) {
-    return (
-      <Text as="span" className="syntax-date">
-        <Meta>[Date] </Meta>
-        {input.toJSON()}
       </Text>
     );
   }
@@ -203,28 +258,6 @@ export const syntaxify = (
     //noop
   }
 
-  // TODO object
-  if (input instanceof Object) {
-    return (
-      <Text as="span" className="syntax-object">
-        {'{ '}
-        {Object.entries(input).map(([key, value], i, arr) => {
-          return (
-            <>
-              <Text as="span" className="syntax-object-key">
-                {key}:{' '}
-              </Text>
-              <Text as="span" className="syntax-object-value">
-                {syntaxify(value, { color }) as string | React.JSX.Element}
-                {i < arr.length - 1 && ', '}
-              </Text>
-            </>
-          );
-        })}
-        {' }'}
-      </Text>
-    );
-  }
   return (
     <Text as="span" className="syntax-unknown">
       {input.toString()}
