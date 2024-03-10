@@ -27,7 +27,6 @@ export const Editor: FC<EditorParams> = ({ onExecute }) => {
               key: 'Ctrl-Enter',
               mac: 'Cmd-Enter',
               run: (view) => {
-                console.dir(view);
                 const code = view.state.doc.toString();
                 onExecute(code, true);
                 return true;

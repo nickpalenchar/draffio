@@ -1,6 +1,0 @@
-const sayHello = () => {
-  return "Hello, world!"
-}
-
-sayHello();
-

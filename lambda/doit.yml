@@ -1,7 +1,0 @@
-# deploy the lambda to aws
-
-__MAIN__:
-  IN ./getCode:
-    - zip index.zip index.js
-    - aws lambda update-function-code --function-name draffio-get-code --zip-file fileb://index.zip
-    - rm index.zip
