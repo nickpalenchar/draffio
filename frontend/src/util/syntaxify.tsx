@@ -181,7 +181,7 @@ export const syntaxify = (
     }
     if (input.type === 'result-array') {
       return (
-        <Text as="span" className="syntax-array">
+        <Text as="span" className="syntax-array" key={Date.now()}>
           [
           {input.result.map((out: any, i: number, arr: Array<any>) => (
             <>

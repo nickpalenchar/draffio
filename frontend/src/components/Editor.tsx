@@ -24,8 +24,12 @@ export const Editor: FC<EditorParams> = ({ onExecute }) => {
         Prec.highest(
           keymap.of([
             {
+              key: 'Ctrl-Enter',
               mac: 'Cmd-Enter',
               run: (view) => {
+                console.dir(view);
+                const code = view.state.doc.toString();
+                onExecute(code, true);
                 return true;
               },
             },
@@ -34,10 +38,7 @@ export const Editor: FC<EditorParams> = ({ onExecute }) => {
       ],
       parent: editorRef.current,
     });
-    editor.dom.addEventListener('keydown', (e: any) => {
-      console.log('hello??');
-      // e.preventDefault();
-    });
+
     (window as any).editor = editor;
     setCodeEditor(editor);
 
@@ -54,13 +55,6 @@ export const Editor: FC<EditorParams> = ({ onExecute }) => {
     onExecute(code, true);
   };
 
-  const onKeyDown = (e: any) => {
-    if (!e.ctrlKey && e.metaKey && e.key === 'Enter') {
-      console.log('execute!');
-      e.preventDefault();
-    }
-  };
-
   return (
     <VStack>
       <Box
@@ -72,12 +66,7 @@ export const Editor: FC<EditorParams> = ({ onExecute }) => {
       >
         <Box background="yellow.50">
           {' '}
-          <Box
-            maxHeight="100%"
-            width="100%"
-            ref={editorRef}
-            onKeyDown={onKeyDown}
-          />
+          <Box maxHeight="100%" width="100%" ref={editorRef} />
         </Box>
       </Box>
       <Spacer />
