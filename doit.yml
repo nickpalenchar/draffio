@@ -4,4 +4,5 @@ __MAIN__:
     - npm run build
   IN ./frontend/build:
     - cp ./index.html ./404.html
+    - aws s3 rm --recursive s3://draff.io/
     - aws s3 sync . s3://draff.io
