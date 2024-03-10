@@ -1,8 +1,9 @@
 import React, { FC, useEffect, useRef, useState } from 'react';
-import { Box, Button, Center, Flex, Spacer, VStack } from '@chakra-ui/react';
+import { Box, Button, Center, Spacer, VStack } from '@chakra-ui/react';
 import { EditorView, basicSetup } from 'codemirror';
 import { javascript } from '@codemirror/lang-javascript';
-
+import { keymap } from '@codemirror/view';
+import { Prec } from '@codemirror/state';
 interface EditorParams {
   onExecute: (code: string, clearScope?: boolean) => void;
 }
@@ -17,9 +18,26 @@ export const Editor: FC<EditorParams> = ({ onExecute }) => {
     }
     const editor = new EditorView({
       doc: '// Your code here',
-      extensions: [basicSetup, javascript()],
+      extensions: [
+        basicSetup,
+        javascript(),
+        Prec.highest(
+          keymap.of([
+            {
+              key: 'Ctrl-Enter',
+              mac: 'Cmd-Enter',
+              run: (view) => {
+                const code = view.state.doc.toString();
+                onExecute(code, true);
+                return true;
+              },
+            },
+          ]),
+        ),
+      ],
       parent: editorRef.current,
     });
+
     (window as any).editor = editor;
     setCodeEditor(editor);
 
