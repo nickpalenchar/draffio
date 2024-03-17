@@ -111,12 +111,7 @@ export const Draff = () => {
         bg="gray.700"
         margin={{ base: '0', md: '1em' }}
       >
-        <Box
-          minWidth={{ base: '100%', md: '50%' }}
-          height={{ base: '90vh', md: '100%' }}
-          bg="yellow.100"
-          maxH="100%"
-        >
+        <Box minWidth={{ base: '100%', md: '50%' }} bg="yellow.100" maxH="100%">
           <Editor onExecute={onExecute} />
         </Box>
         <Hide above="md">
