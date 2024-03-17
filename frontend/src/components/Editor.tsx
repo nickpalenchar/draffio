@@ -1,5 +1,5 @@
 import React, { FC, useEffect, useRef, useState } from 'react';
-import { Box, Button, Center, Spacer, VStack } from '@chakra-ui/react';
+import { Box, Button, Center, Kbd, Spacer, VStack } from '@chakra-ui/react';
 import { EditorView, basicSetup } from 'codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { keymap } from '@codemirror/view';

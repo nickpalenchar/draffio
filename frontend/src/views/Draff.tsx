@@ -1,17 +1,15 @@
 import React, { useRef, useEffect, useState } from 'react';
 import {
   Flex,
-  Center,
   Box,
   Stack,
-  Button,
   Alert,
   AlertTitle,
-  AlertDialogBody,
   AlertDescription,
-  AlertIcon,
   Icon,
   Link,
+  Hide,
+  Show,
 } from '@chakra-ui/react';
 import { TbGhost2Filled } from 'react-icons/tb';
 import { EditorView, basicSetup } from 'codemirror';
@@ -28,7 +26,7 @@ import {
 
 const defaultLines = [
   ...`       ,"-.
-       ||~'    Draff JS REPL v00.2 (incomplete)
+       ||~'    Draff JS REPL v00.3 (incomplete)
     ___||         copyright (c) 2024 draff.io
    ,(.:')
     || ||
@@ -76,7 +74,6 @@ export const Draff = () => {
       logLines.push(syntaxify(asLogLevel(args[0], level)));
     };
     const callbackFn: CallbackFn = (type, callback, interval) => {
-      console.log('got it', { type, callback, interval });
       if (type === 'timeout') {
         setTimeout(() => {
           onExecute(`(${callback})()`, false);
@@ -108,16 +105,36 @@ export const Draff = () => {
           visiting ❤️
         </AlertDescription>
       </Alert>
-      <Flex height="100%" maxHeight="100%" bg="gray.700" margin="3em">
-        <Box minWidth="50%" bg="yellow.100" maxH="100%">
+      <Flex
+        height="100%"
+        maxHeight="100%"
+        bg="gray.700"
+        margin={{ base: '0', md: '1em' }}
+      >
+        <Box
+          minWidth={{ base: '100%', md: '50%' }}
+          height={{ base: '90vh', md: '100%' }}
+          bg="yellow.100"
+          maxH="100%"
+        >
           <Editor onExecute={onExecute} />
         </Box>
-        <Terminal
-          lines={termLines}
-          onNewLines={onNewTermLines}
-          onClear={onTermClear}
-          onConsole={onTermConsole}
-        />
+        <Hide above="md">
+          <Terminal
+            lines={termLines}
+            onNewLines={onNewTermLines}
+            onClear={onTermClear}
+            onConsole={onTermConsole}
+          />
+        </Hide>
+        <Show above="md">
+          <Terminal
+            lines={termLines}
+            onNewLines={onNewTermLines}
+            onClear={onTermClear}
+            onConsole={onTermConsole}
+          />
+        </Show>
       </Flex>
     </Stack>
   );
