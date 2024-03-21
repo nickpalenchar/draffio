@@ -116,12 +116,12 @@ export const Draff = () => {
         maxHeight="100%"
         bg="gray.700"
         margin={{ base: '0', md: '1em' }}
-        direction={{ base: 'column', sm: 'row' }}
+        direction={{ base: 'column', md: 'row' }}
       >
         <Box
-          minWidth={{ base: '100%', sm: '50%' }}
+          minWidth={{ base: '100%', md: '50%' }}
           bg="yellow.100"
-          maxH={{ base: '50%', sm: '100%' }}
+          maxH={{ base: '60vh', md: '100%' }}
         >
           <Editor onExecute={onExecute} />
         </Box>
