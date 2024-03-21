@@ -133,7 +133,10 @@ export const Terminal: FC<TerminalProps> = ({
       style={terminalStyle}
       overflowY={'scroll'}
       maxWidth="100%"
-      height={innerHeight ? Math.round(innerHeight * 0.8) + 'px' : '80%'}
+      height={{
+        base: '20vh',
+        md: innerHeight ? Math.round(innerHeight * 0.8) + 'px' : '80%',
+      }}
       onClick={handleTerminalClick}
     >
       {lines.map((line, i) => (

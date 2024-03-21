@@ -1,17 +1,8 @@
 import React from 'react';
-import {
-  Outlet,
-  RouterProvider,
-  createBrowserRouter,
-  redirect,
-} from 'react-router-dom';
-import {
-  ChakraProvider,
-  extendBaseTheme,
-  theme as chakraTheme,
-} from '@chakra-ui/react';
+import { createBrowserRouter } from 'react-router-dom';
 import { Draff } from './views/Draff';
 import { RandomDraff } from './views/RandomDraff';
+import { ChakraProvider } from '@chakra-ui/react';
 
 // ROUTING
 const router = createBrowserRouter([
@@ -34,7 +25,11 @@ const router = createBrowserRouter([
 
 function App() {
   window.location.href = '/js/new';
-  return <div className="App"></div>;
+  return (
+    <ChakraProvider>
+      <div className="App"></div>
+    </ChakraProvider>
+  );
 }
 
 export default App;

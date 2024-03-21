@@ -1,17 +1,15 @@
 import React, { useRef, useEffect, useState } from 'react';
 import {
   Flex,
-  Center,
   Box,
   Stack,
-  Button,
   Alert,
   AlertTitle,
-  AlertDialogBody,
   AlertDescription,
-  AlertIcon,
   Icon,
   Link,
+  Hide,
+  Show,
 } from '@chakra-ui/react';
 import { TbGhost2Filled } from 'react-icons/tb';
 import { EditorView, basicSetup } from 'codemirror';
@@ -25,10 +23,11 @@ import {
   asPlainText,
   syntaxify,
 } from '../util/syntaxify';
+import { Container } from 'react-bootstrap';
 
 const defaultLines = [
   ...`       ,"-.
-       ||~'    Draff JS REPL v00.2 (incomplete)
+       ||~'    Draff JS REPL v00.3 (incomplete)
     ___||         copyright (c) 2024 draff.io
    ,(.:')
     || ||
@@ -76,7 +75,6 @@ export const Draff = () => {
       logLines.push(syntaxify(asLogLevel(args[0], level)));
     };
     const callbackFn: CallbackFn = (type, callback, interval) => {
-      console.log('got it', { type, callback, interval });
       if (type === 'timeout') {
         setTimeout(() => {
           onExecute(`(${callback})()`, false);
@@ -101,23 +99,40 @@ export const Draff = () => {
         <Icon as={TbGhost2Filled} boxSize={'52px'} color="yellow.800"></Icon>
         <AlertTitle>NOTHING IS SAVED</AlertTitle>
 
-        <AlertDescription>
-          This is a pre-release ("double zero") of{' '}
-          <Link href={'#'}>draff.io</Link>. Remember,{' '}
-          <b>All data is lost immediately on close or refresh</b>. Thanks for
-          visiting ❤️
-        </AlertDescription>
+        <Show above="sm">
+          <AlertDescription>
+            This is a pre-release ("double zero") of{' '}
+            <Link href={'#'}>draff.io</Link>. Remember,{' '}
+            <b>All data is lost immediately on close or refresh</b>. Thanks for
+            visiting ❤️
+          </AlertDescription>
+        </Show>
+        <Hide above="sm">
+          <AlertDescription>It's re-release!</AlertDescription>
+        </Hide>
       </Alert>
-      <Flex height="100%" maxHeight="100%" bg="gray.700" margin="3em">
-        <Box minWidth="50%" bg="yellow.100" maxH="100%">
+      <Flex
+        height="100%"
+        maxHeight="100%"
+        bg="gray.700"
+        margin={{ base: '0', md: '1em' }}
+        direction={{ base: 'column', md: 'row' }}
+      >
+        <Box
+          minWidth={{ base: '100%', md: '50%' }}
+          bg="yellow.100"
+          maxH={{ base: '60vh', md: '100%' }}
+        >
           <Editor onExecute={onExecute} />
         </Box>
+        {/* <Show above="md"> */}
         <Terminal
           lines={termLines}
           onNewLines={onNewTermLines}
           onClear={onTermClear}
           onConsole={onTermConsole}
         />
+        {/* </Show> */}
       </Flex>
     </Stack>
   );
