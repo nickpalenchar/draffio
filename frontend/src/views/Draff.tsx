@@ -23,6 +23,7 @@ import {
   asPlainText,
   syntaxify,
 } from '../util/syntaxify';
+import { Container } from 'react-bootstrap';
 
 const defaultLines = [
   ...`       ,"-.
@@ -98,38 +99,40 @@ export const Draff = () => {
         <Icon as={TbGhost2Filled} boxSize={'52px'} color="yellow.800"></Icon>
         <AlertTitle>NOTHING IS SAVED</AlertTitle>
 
-        <AlertDescription>
-          This is a pre-release ("double zero") of{' '}
-          <Link href={'#'}>draff.io</Link>. Remember,{' '}
-          <b>All data is lost immediately on close or refresh</b>. Thanks for
-          visiting ❤️
-        </AlertDescription>
+        <Show above="sm">
+          <AlertDescription>
+            This is a pre-release ("double zero") of{' '}
+            <Link href={'#'}>draff.io</Link>. Remember,{' '}
+            <b>All data is lost immediately on close or refresh</b>. Thanks for
+            visiting ❤️
+          </AlertDescription>
+        </Show>
+        <Hide above="sm">
+          <AlertDescription>It's re-release!</AlertDescription>
+        </Hide>
       </Alert>
       <Flex
         height="100%"
         maxHeight="100%"
         bg="gray.700"
         margin={{ base: '0', md: '1em' }}
+        direction={{ base: 'column', sm: 'row' }}
       >
-        <Box minWidth={{ base: '100%', md: '50%' }} bg="yellow.100" maxH="100%">
+        <Box
+          minWidth={{ base: '100%', sm: '50%' }}
+          bg="yellow.100"
+          maxH={{ base: '50%', sm: '100%' }}
+        >
           <Editor onExecute={onExecute} />
         </Box>
-        <Hide above="md">
-          <Terminal
-            lines={termLines}
-            onNewLines={onNewTermLines}
-            onClear={onTermClear}
-            onConsole={onTermConsole}
-          />
-        </Hide>
-        <Show above="md">
-          <Terminal
-            lines={termLines}
-            onNewLines={onNewTermLines}
-            onClear={onTermClear}
-            onConsole={onTermConsole}
-          />
-        </Show>
+        {/* <Show above="md"> */}
+        <Terminal
+          lines={termLines}
+          onNewLines={onNewTermLines}
+          onClear={onTermClear}
+          onConsole={onTermConsole}
+        />
+        {/* </Show> */}
       </Flex>
     </Stack>
   );
