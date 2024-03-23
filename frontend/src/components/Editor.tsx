@@ -5,46 +5,24 @@ import { javascript } from '@codemirror/lang-javascript';
 import { keymap } from '@codemirror/view';
 import { Prec } from '@codemirror/state';
 interface EditorParams {
-  codeEditor?: EditorView;
+  editor?: EditorView | null;
   editorRef?: React.RefObject<HTMLDivElement>;
   onExecute: (code: string, clearScope?: boolean) => void;
 }
 
-export const Editor: FC<EditorParams> = ({ onExecute, editorRef }) => {
+export const Editor: FC<EditorParams> = ({ onExecute, editorRef, editor }) => {
   const [codeEditor, setCodeEditor] = useState<EditorView | null>(null);
 
   useEffect(() => {
-    if (!editorRef?.current || codeEditor) {
+    if (!editor) {
       return;
     }
-    const editor = new EditorView({
-      doc: '// Your code here',
-      extensions: [
-        basicSetup,
-        javascript(),
-        Prec.highest(
-          keymap.of([
-            {
-              key: 'Ctrl-Enter',
-              mac: 'Cmd-Enter',
-              run: (view) => {
-                const code = view.state.doc.toString();
-                onExecute(code, true);
-                return true;
-              },
-            },
-          ]),
-        ),
-      ],
-      parent: editorRef.current,
-    });
-
     (window as any).editor = editor;
     setCodeEditor(editor);
 
     // cleanup
     return () => editor.destroy();
-  }, []);
+  }, [editor]);
 
   const onRun = () => {
     if (!codeEditor) {

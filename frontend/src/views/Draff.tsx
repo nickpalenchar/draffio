@@ -14,10 +14,12 @@ import {
 } from '@chakra-ui/react';
 import { TbGhost2Filled } from 'react-icons/tb';
 import { HiMiniPlay } from 'react-icons/hi2';
-import { EditorView, basicSetup } from 'codemirror';
-import { javascript } from '@codemirror/lang-javascript';
 import { Terminal } from '../components/Terminal';
 import { Editor } from '../components/Editor';
+import { EditorView, basicSetup } from 'codemirror';
+import { javascript } from '@codemirror/lang-javascript';
+import { keymap } from '@codemirror/view';
+import { Prec } from '@codemirror/state';
 import { CallbackFn, ConsoleFn, safeEval } from '../util/safeEval';
 import {
   MetaSyntox,
@@ -43,6 +45,36 @@ const timeouts: Record<number, number> = {};
 export const Draff = () => {
   const editorRef = useRef<HTMLDivElement>(null);
   const [termLines, setTermLines] = useState(defaultLines);
+  const [editor, setEditor] = useState<EditorView | null>(null);
+
+  useEffect(() => {
+    if (!editorRef?.current || editor) {
+      return;
+    }
+    const editorView = new EditorView({
+      doc: '// Your code here',
+      extensions: [
+        basicSetup,
+        javascript(),
+        Prec.highest(
+          keymap.of([
+            {
+              key: 'Ctrl-Enter',
+              mac: 'Cmd-Enter',
+              run: (view) => {
+                const code = view.state.doc.toString();
+                onExecute(code, true);
+                return true;
+              },
+            },
+          ]),
+        ),
+      ],
+      parent: editorRef.current,
+    });
+    setEditor(editorView);
+    return () => editorView.destroy();
+  }, [editorRef]);
 
   const onNewTermLines = (lines: string[]) =>
     setTermLines([...termLines, ...lines.map((line) => syntaxify(line))]);
@@ -120,7 +152,11 @@ export const Draff = () => {
             </Button>
           </Flex>
           <Box bg="yellow.100" maxH={{ base: '60vh', md: '100%' }}>
-            <Editor onExecute={onExecute} editorRef={editorRef} />
+            <Editor
+              onExecute={onExecute}
+              editorRef={editorRef}
+              editor={editor}
+            />
           </Box>
         </Flex>
         <Terminal
