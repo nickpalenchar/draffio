@@ -110,6 +110,14 @@ export const Draff = () => {
     setTermLines([]);
   };
 
+  const onRun = () => {
+    if (!editor) {
+      return null;
+    }
+    const code = editor.state.doc.toString();
+    onExecute(code, true);
+  };
+
   return (
     <Stack maxHeight="100vh" overflowY={'scroll'}>
       <Alert status={'warning'} minHeight={'34px'}>
@@ -147,6 +155,7 @@ export const Draff = () => {
               minW="7em"
               borderRadius={0}
               colorScheme={'orange'}
+              onClick={onRun}
             >
               Run <Icon as={HiMiniPlay} marginLeft={1} />
             </Button>

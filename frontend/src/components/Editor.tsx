@@ -24,15 +24,6 @@ export const Editor: FC<EditorParams> = ({ onExecute, editorRef, editor }) => {
     return () => editor.destroy();
   }, [editor]);
 
-  const onRun = () => {
-    if (!codeEditor) {
-      return null;
-    }
-
-    const code = codeEditor.state.doc.toString();
-    onExecute(code, true);
-  };
-
   return (
     <VStack>
       <Box
@@ -46,17 +37,6 @@ export const Editor: FC<EditorParams> = ({ onExecute, editorRef, editor }) => {
           {' '}
           <Box maxHeight="100%" width="100%" ref={editorRef} />
         </Box>
-      </Box>
-      <Hide below="md">
-        <Spacer />
-      </Hide>
-      <Box height="100%">
-        <Center minWidth="48px">
-          <Button colorScheme="green" onClick={onRun}>
-            Run
-          </Button>
-        </Center>
-        <Spacer></Spacer>
       </Box>
     </VStack>
   );
