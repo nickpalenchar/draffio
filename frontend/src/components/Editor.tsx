@@ -1,29 +1,10 @@
-import React, { FC, useEffect, useRef, useState } from 'react';
-import { Box, Button, Center, Hide, Spacer, VStack } from '@chakra-ui/react';
-import { EditorView, basicSetup } from 'codemirror';
-import { javascript } from '@codemirror/lang-javascript';
-import { keymap } from '@codemirror/view';
-import { Prec } from '@codemirror/state';
+import React, { FC } from 'react';
+import { Box, VStack } from '@chakra-ui/react';
 interface EditorParams {
-  editor?: EditorView | null;
   editorRef?: React.RefObject<HTMLDivElement>;
-  onExecute: (code: string, clearScope?: boolean) => void;
 }
 
-export const Editor: FC<EditorParams> = ({ onExecute, editorRef, editor }) => {
-  const [codeEditor, setCodeEditor] = useState<EditorView | null>(null);
-
-  useEffect(() => {
-    if (!editor) {
-      return;
-    }
-    (window as any).editor = editor;
-    setCodeEditor(editor);
-
-    // cleanup
-    return () => editor.destroy();
-  }, [editor]);
-
+export const Editor: FC<EditorParams> = ({ editorRef }) => {
   return (
     <VStack>
       <Box

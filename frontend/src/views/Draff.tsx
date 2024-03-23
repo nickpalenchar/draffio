@@ -16,7 +16,9 @@ import { TbGhost2Filled } from 'react-icons/tb';
 import { HiMiniPlay } from 'react-icons/hi2';
 import { Terminal } from '../components/Terminal';
 import { Editor } from '../components/Editor';
+import { FaSave } from 'react-icons/fa';
 import { EditorView, basicSetup } from 'codemirror';
+import { FaPaperPlane } from 'react-icons/fa';
 import { javascript } from '@codemirror/lang-javascript';
 import { keymap } from '@codemirror/view';
 import { Prec } from '@codemirror/state';
@@ -27,6 +29,7 @@ import {
   asPlainText,
   syntaxify,
 } from '../util/syntaxify';
+import { Tooltip } from '@chakra-ui/react';
 
 const defaultLines = [
   ...`       ,"-.
@@ -148,24 +151,44 @@ export const Draff = () => {
           minWidth={{ base: '100%', md: '50%' }}
           bg="yellow.100"
         >
-          <Flex bg="yellow.50" justify={'space-around'}>
+          <Flex bg="yellow.50" justify={'center'}>
+            <Tooltip label="Soon." placement={'top'}>
+              <Button
+                margin={2}
+                size="sm"
+                minW="7em"
+                borderRadius={0}
+                colorScheme="orange"
+                isDisabled={true}
+                rightIcon={<FaPaperPlane />}
+              >
+                Share
+              </Button>
+            </Tooltip>
             <Button
               margin={2}
               size="sm"
               minW="7em"
               borderRadius={0}
-              colorScheme={'orange'}
+              colorScheme="orange"
+              isDisabled={true}
+              rightIcon={<FaSave />}
+            >
+              Save
+            </Button>
+            <Button
+              margin={2}
+              size="sm"
+              minW="7em"
+              borderRadius={0}
+              colorScheme={'teal'}
               onClick={onRun}
             >
               Run <Icon as={HiMiniPlay} marginLeft={1} />
             </Button>
           </Flex>
           <Box bg="yellow.100" maxH={{ base: '60vh', md: '100%' }}>
-            <Editor
-              onExecute={onExecute}
-              editorRef={editorRef}
-              editor={editor}
-            />
+            <Editor editorRef={editorRef} />
           </Box>
         </Flex>
         <Terminal
