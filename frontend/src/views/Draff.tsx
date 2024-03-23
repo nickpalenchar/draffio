@@ -10,8 +10,10 @@ import {
   Link,
   Hide,
   Show,
+  Button,
 } from '@chakra-ui/react';
 import { TbGhost2Filled } from 'react-icons/tb';
+import { HiMiniPlay } from 'react-icons/hi2';
 import { EditorView, basicSetup } from 'codemirror';
 import { javascript } from '@codemirror/lang-javascript';
 import { Terminal } from '../components/Terminal';
@@ -23,11 +25,10 @@ import {
   asPlainText,
   syntaxify,
 } from '../util/syntaxify';
-import { Container } from 'react-bootstrap';
 
 const defaultLines = [
   ...`       ,"-.
-       ||~'    Draff JS REPL v00.3 (incomplete)
+       ||~'    Draff JS REPL v00.6 (incomplete)
     ___||         copyright (c) 2024 draff.io
    ,(.:')
     || ||
@@ -118,21 +119,32 @@ export const Draff = () => {
         margin={{ base: '0', md: '1em' }}
         direction={{ base: 'column', md: 'row' }}
       >
-        <Box
+        <Flex
+          direction="column"
           minWidth={{ base: '100%', md: '50%' }}
           bg="yellow.100"
-          maxH={{ base: '60vh', md: '100%' }}
         >
-          <Editor onExecute={onExecute} />
-        </Box>
-        {/* <Show above="md"> */}
+          <Flex bg="yellow.50" justify={'space-around'}>
+            <Button
+              margin={2}
+              size="sm"
+              minW="7em"
+              borderRadius={0}
+              colorScheme={'orange'}
+            >
+              Run <Icon as={HiMiniPlay} marginLeft={1} />
+            </Button>
+          </Flex>
+          <Box bg="yellow.100" maxH={{ base: '60vh', md: '100%' }}>
+            <Editor onExecute={onExecute} />
+          </Box>
+        </Flex>
         <Terminal
           lines={termLines}
           onNewLines={onNewTermLines}
           onClear={onTermClear}
           onConsole={onTermConsole}
         />
-        {/* </Show> */}
       </Flex>
     </Stack>
   );
