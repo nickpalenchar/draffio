@@ -5,15 +5,16 @@ import { javascript } from '@codemirror/lang-javascript';
 import { keymap } from '@codemirror/view';
 import { Prec } from '@codemirror/state';
 interface EditorParams {
+  codeEditor?: EditorView;
+  editorRef?: React.RefObject<HTMLDivElement>;
   onExecute: (code: string, clearScope?: boolean) => void;
 }
 
-export const Editor: FC<EditorParams> = ({ onExecute }) => {
-  const editorRef = useRef<HTMLDivElement>(null);
+export const Editor: FC<EditorParams> = ({ onExecute, editorRef }) => {
   const [codeEditor, setCodeEditor] = useState<EditorView | null>(null);
 
   useEffect(() => {
-    if (!editorRef.current || codeEditor) {
+    if (!editorRef?.current || codeEditor) {
       return;
     }
     const editor = new EditorView({

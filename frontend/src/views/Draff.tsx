@@ -42,26 +42,10 @@ const timeouts: Record<number, number> = {};
 
 export const Draff = () => {
   const editorRef = useRef<HTMLDivElement>(null);
-  const [codeEditor, setCodeEditor] = useState<EditorView | null>(null);
   const [termLines, setTermLines] = useState(defaultLines);
 
   const onNewTermLines = (lines: string[]) =>
     setTermLines([...termLines, ...lines.map((line) => syntaxify(line))]);
-
-  useEffect(() => {
-    if (!editorRef.current || codeEditor) {
-      return;
-    }
-    const editor = new EditorView({
-      doc: '// Your code here',
-      extensions: [basicSetup, javascript()],
-      parent: editorRef.current,
-    });
-    setCodeEditor(editor);
-
-    // cleanup
-    return () => editor.destroy();
-  }, []);
 
   const onExecute = async (
     code: string,
@@ -136,7 +120,7 @@ export const Draff = () => {
             </Button>
           </Flex>
           <Box bg="yellow.100" maxH={{ base: '60vh', md: '100%' }}>
-            <Editor onExecute={onExecute} />
+            <Editor onExecute={onExecute} editorRef={editorRef} />
           </Box>
         </Flex>
         <Terminal
