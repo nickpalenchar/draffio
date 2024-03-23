@@ -10,12 +10,18 @@ import {
   Link,
   Hide,
   Show,
+  Button,
 } from '@chakra-ui/react';
 import { TbGhost2Filled } from 'react-icons/tb';
-import { EditorView, basicSetup } from 'codemirror';
-import { javascript } from '@codemirror/lang-javascript';
+import { HiMiniPlay } from 'react-icons/hi2';
 import { Terminal } from '../components/Terminal';
 import { Editor } from '../components/Editor';
+import { FaSave } from 'react-icons/fa';
+import { EditorView, basicSetup } from 'codemirror';
+import { FaPaperPlane } from 'react-icons/fa';
+import { javascript } from '@codemirror/lang-javascript';
+import { keymap } from '@codemirror/view';
+import { Prec } from '@codemirror/state';
 import { CallbackFn, ConsoleFn, safeEval } from '../util/safeEval';
 import {
   MetaSyntox,
@@ -23,11 +29,11 @@ import {
   asPlainText,
   syntaxify,
 } from '../util/syntaxify';
-import { Container } from 'react-bootstrap';
+import { Tooltip } from '@chakra-ui/react';
 
 const defaultLines = [
   ...`       ,"-.
-       ||~'    Draff JS REPL v00.3 (incomplete)
+       ||~'    Draff JS REPL v00.6 (incomplete)
     ___||         copyright (c) 2024 draff.io
    ,(.:')
     || ||
@@ -41,26 +47,40 @@ const timeouts: Record<number, number> = {};
 
 export const Draff = () => {
   const editorRef = useRef<HTMLDivElement>(null);
-  const [codeEditor, setCodeEditor] = useState<EditorView | null>(null);
   const [termLines, setTermLines] = useState(defaultLines);
+  const [editor, setEditor] = useState<EditorView | null>(null);
+
+  useEffect(() => {
+    if (!editorRef?.current || editor) {
+      return;
+    }
+    const editorView = new EditorView({
+      doc: '// Your code here',
+      extensions: [
+        basicSetup,
+        javascript(),
+        Prec.highest(
+          keymap.of([
+            {
+              key: 'Ctrl-Enter',
+              mac: 'Cmd-Enter',
+              run: (view) => {
+                const code = view.state.doc.toString();
+                onExecute(code, true);
+                return true;
+              },
+            },
+          ]),
+        ),
+      ],
+      parent: editorRef.current,
+    });
+    setEditor(editorView);
+    return () => editorView.destroy();
+  }, [editorRef]);
 
   const onNewTermLines = (lines: string[]) =>
     setTermLines([...termLines, ...lines.map((line) => syntaxify(line))]);
-
-  useEffect(() => {
-    if (!editorRef.current || codeEditor) {
-      return;
-    }
-    const editor = new EditorView({
-      doc: '// Your code here',
-      extensions: [basicSetup, javascript()],
-      parent: editorRef.current,
-    });
-    setCodeEditor(editor);
-
-    // cleanup
-    return () => editor.destroy();
-  }, []);
 
   const onExecute = async (
     code: string,
@@ -93,6 +113,14 @@ export const Draff = () => {
     setTermLines([]);
   };
 
+  const onRun = () => {
+    if (!editor) {
+      return null;
+    }
+    const code = editor.state.doc.toString();
+    onExecute(code, true);
+  };
+
   return (
     <Stack maxHeight="100vh" overflowY={'scroll'}>
       <Alert status={'warning'} minHeight={'34px'}>
@@ -118,21 +146,57 @@ export const Draff = () => {
         margin={{ base: '0', md: '1em' }}
         direction={{ base: 'column', md: 'row' }}
       >
-        <Box
+        <Flex
+          direction="column"
           minWidth={{ base: '100%', md: '50%' }}
           bg="yellow.100"
-          maxH={{ base: '60vh', md: '100%' }}
         >
-          <Editor onExecute={onExecute} />
-        </Box>
-        {/* <Show above="md"> */}
+          <Flex bg="yellow.50" justify={'center'}>
+            <Tooltip label="Soon." placement={'top'}>
+              <Button
+                margin={2}
+                size="sm"
+                minW="7em"
+                borderRadius={0}
+                colorScheme="orange"
+                isDisabled={true}
+                rightIcon={<FaPaperPlane />}
+              >
+                Share
+              </Button>
+            </Tooltip>
+            <Button
+              margin={2}
+              size="sm"
+              minW="7em"
+              borderRadius={0}
+              colorScheme="orange"
+              isDisabled={true}
+              rightIcon={<FaSave />}
+            >
+              Save
+            </Button>
+            <Button
+              margin={2}
+              size="sm"
+              minW="7em"
+              borderRadius={0}
+              colorScheme={'teal'}
+              onClick={onRun}
+            >
+              Run <Icon as={HiMiniPlay} marginLeft={1} />
+            </Button>
+          </Flex>
+          <Box bg="yellow.100" maxH={{ base: '60vh', md: '100%' }}>
+            <Editor editorRef={editorRef} />
+          </Box>
+        </Flex>
         <Terminal
           lines={termLines}
           onNewLines={onNewTermLines}
           onClear={onTermClear}
           onConsole={onTermConsole}
         />
-        {/* </Show> */}
       </Flex>
     </Stack>
   );
