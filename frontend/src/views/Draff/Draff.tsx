@@ -1,21 +1,30 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Flex, Box, Stack, Icon, Text, Button } from '@chakra-ui/react';
+import {
+  Flex,
+  Box,
+  Stack,
+  Icon,
+  Text,
+  Button,
+  Image,
+  Code,
+} from '@chakra-ui/react';
 import { HiMiniPlay } from 'react-icons/hi2';
-import { Terminal } from '../components/Terminal';
-import { Editor } from '../components/Editor';
+import { Terminal } from '../../components/Terminal';
+import { Editor } from '../../components/Editor';
 import { FaSave } from 'react-icons/fa';
 import { EditorView, basicSetup } from 'codemirror';
 import { FaPaperPlane } from 'react-icons/fa';
 import { javascript } from '@codemirror/lang-javascript';
 import { keymap } from '@codemirror/view';
 import { Prec } from '@codemirror/state';
-import { CallbackFn, ConsoleFn, safeEval } from '../util/safeEval';
+import { CallbackFn, ConsoleFn, safeEval } from '../../util/safeEval';
 import {
   MetaSyntox,
   asLogLevel,
   asPlainText,
   syntaxify,
-} from '../util/syntaxify';
+} from '../../util/syntaxify';
 import { Tooltip } from '@chakra-ui/react';
 
 const defaultLines = [
@@ -109,22 +118,38 @@ export const Draff = () => {
   };
 
   return (
-    <Stack maxHeight="100vh" overflowY={'scroll'}>
-      <Flex p={4} bgColor={'orange.200'} verticalAlign={'center'}>
-        <code>
+    <Box maxHeight="100vh" bgColor="yellow.50">
+      <Flex
+        bgColor={'orange.200'}
+        borderBottomColor="orange.300"
+        borderBottomWidth="1px"
+        verticalAlign={'center'}
+        maxH="4em"
+      >
+        <Tooltip label="Giraffe icons created by Freepik - Flaticon">
+          <Image
+            src={process.env.PUBLIC_URL + '/draff-logo.webp'}
+            height="2.8em"
+            marginTop={2}
+            marginLeft="1em"
+          />
+        </Tooltip>
+        <Code background="transparent" p={4} fontSize="17px">
           <Text as="span" color="orange.600" fontWeight={'bold'}>
             /dev/null
           </Text>
           <Text as="span" fontWeight={'bold'} color="yellow.800">
             /untitled
           </Text>
-        </code>
+        </Code>
       </Flex>
+
+      {/* DRAFF BODY  */}
       <Flex
         height="100%"
         maxHeight="100%"
         bg="gray.700"
-        margin={{ base: '0', md: '1em' }}
+        margin={{ base: '0', md: '0 1em' }}
         marginTop="0"
         direction={{ base: 'column', md: 'row' }}
       >
@@ -180,6 +205,6 @@ export const Draff = () => {
           onConsole={onTermConsole}
         />
       </Flex>
-    </Stack>
+    </Box>
   );
 };
