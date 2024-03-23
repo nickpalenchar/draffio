@@ -15,10 +15,11 @@ import {
 } from '../../util/syntaxify';
 import { Tooltip } from '@chakra-ui/react';
 import { EditorButtons } from './EditorButtons';
+import { TerminalButtons } from './TerminalButtons';
 
 const defaultLines = [
   ...`       ,"-.
-       ||~'    Draff JS REPL v00.6 (incomplete)
+       ||~'    Draff JS REPL v00.7 (incomplete)
     ___||         copyright (c) 2024 draff.io
    ,(.:')
     || ||
@@ -152,12 +153,19 @@ export const Draff = () => {
             <Editor editorRef={editorRef} />
           </Box>
         </Flex>
-        <Terminal
-          lines={termLines}
-          onNewLines={onNewTermLines}
-          onClear={onTermClear}
-          onConsole={onTermConsole}
-        />
+        <Flex
+          direction="column"
+          minWidth={{ base: '100%', md: '50%' }}
+          bgColor="gray.700"
+        >
+          <TerminalButtons onClear={onTermClear} />
+          <Terminal
+            lines={termLines}
+            onNewLines={onNewTermLines}
+            onClear={onTermClear}
+            onConsole={onTermConsole}
+          />
+        </Flex>
       </Flex>
     </Box>
   );

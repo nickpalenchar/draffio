@@ -2,7 +2,7 @@ import React from 'react';
 import { createBrowserRouter } from 'react-router-dom';
 import { Draff } from './views/Draff';
 import { RandomDraff } from './views/RandomDraff';
-import { ChakraProvider } from '@chakra-ui/react';
+import { ChakraProvider, Container } from '@chakra-ui/react';
 
 // ROUTING
 const router = createBrowserRouter([

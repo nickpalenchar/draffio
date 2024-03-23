@@ -104,12 +104,6 @@ export const Terminal: FC<TerminalProps> = ({
         onClear();
       } else if (output.event === 'HELP' || false) {
         // TODO
-        // onSetLines([
-        //   ...lines,
-        //   <Text color="blue.300" fontStyle={'italic'}>
-        //     {'Help Commands:\n  .help - show this\n  .clear - clear the screen'}
-        //   </Text>,
-        // ]);
       }
     } else {
       onNewLines([asPlainText('> ' + input), ...logLines, output]);
