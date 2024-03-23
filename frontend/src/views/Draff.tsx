@@ -1,18 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import {
-  Flex,
-  Box,
-  Stack,
-  Alert,
-  AlertTitle,
-  AlertDescription,
-  Icon,
-  Link,
-  Hide,
-  Show,
-  Button,
-} from '@chakra-ui/react';
-import { TbGhost2Filled } from 'react-icons/tb';
+import { Flex, Box, Stack, Icon, Text, Button } from '@chakra-ui/react';
 import { HiMiniPlay } from 'react-icons/hi2';
 import { Terminal } from '../components/Terminal';
 import { Editor } from '../components/Editor';
@@ -123,27 +110,22 @@ export const Draff = () => {
 
   return (
     <Stack maxHeight="100vh" overflowY={'scroll'}>
-      <Alert status={'warning'} minHeight={'34px'}>
-        <Icon as={TbGhost2Filled} boxSize={'52px'} color="yellow.800"></Icon>
-        <AlertTitle>NOTHING IS SAVED</AlertTitle>
-
-        <Show above="sm">
-          <AlertDescription>
-            This is a pre-release ("double zero") of{' '}
-            <Link href={'#'}>draff.io</Link>. Remember,{' '}
-            <b>All data is lost immediately on close or refresh</b>. Thanks for
-            visiting ❤️
-          </AlertDescription>
-        </Show>
-        <Hide above="sm">
-          <AlertDescription>It's re-release!</AlertDescription>
-        </Hide>
-      </Alert>
+      <Flex p={4} bgColor={'orange.200'} verticalAlign={'center'}>
+        <code>
+          <Text as="span" color="orange.600" fontWeight={'bold'}>
+            /dev/null
+          </Text>
+          <Text as="span" fontWeight={'bold'} color="yellow.800">
+            /untitled
+          </Text>
+        </code>
+      </Flex>
       <Flex
         height="100%"
         maxHeight="100%"
         bg="gray.700"
         margin={{ base: '0', md: '1em' }}
+        marginTop="0"
         direction={{ base: 'column', md: 'row' }}
       >
         <Flex
