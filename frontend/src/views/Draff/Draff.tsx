@@ -1,39 +1,25 @@
 import React, { useRef, useEffect, useState } from 'react';
-import {
-  Flex,
-  Box,
-  Stack,
-  Alert,
-  AlertTitle,
-  AlertDescription,
-  Icon,
-  Link,
-  Hide,
-  Show,
-  Button,
-} from '@chakra-ui/react';
-import { TbGhost2Filled } from 'react-icons/tb';
-import { HiMiniPlay } from 'react-icons/hi2';
-import { Terminal } from '../components/Terminal';
-import { Editor } from '../components/Editor';
-import { FaSave } from 'react-icons/fa';
+import { Flex, Box, Text, Image, Code } from '@chakra-ui/react';
+import { Terminal } from '../../components/Terminal';
+import { Editor } from '../../components/Editor';
 import { EditorView, basicSetup } from 'codemirror';
-import { FaPaperPlane } from 'react-icons/fa';
 import { javascript } from '@codemirror/lang-javascript';
 import { keymap } from '@codemirror/view';
 import { Prec } from '@codemirror/state';
-import { CallbackFn, ConsoleFn, safeEval } from '../util/safeEval';
+import { CallbackFn, ConsoleFn, safeEval } from '../../util/safeEval';
 import {
   MetaSyntox,
   asLogLevel,
   asPlainText,
   syntaxify,
-} from '../util/syntaxify';
+} from '../../util/syntaxify';
 import { Tooltip } from '@chakra-ui/react';
+import { EditorButtons } from './EditorButtons';
+import { TerminalButtons } from './TerminalButtons';
 
 const defaultLines = [
   ...`       ,"-.
-       ||~'    Draff JS REPL v00.6 (incomplete)
+       ||~'    Draff JS REPL v00.7 (incomplete)
     ___||         copyright (c) 2024 draff.io
    ,(.:')
     || ||
@@ -122,28 +108,39 @@ export const Draff = () => {
   };
 
   return (
-    <Stack maxHeight="100vh" overflowY={'scroll'}>
-      <Alert status={'warning'} minHeight={'34px'}>
-        <Icon as={TbGhost2Filled} boxSize={'52px'} color="yellow.800"></Icon>
-        <AlertTitle>NOTHING IS SAVED</AlertTitle>
+    <Box maxHeight="100vh" bgColor="yellow.50">
+      <Flex
+        bgColor={'orange.200'}
+        borderBottomColor="orange.300"
+        borderBottomWidth="1px"
+        verticalAlign={'center'}
+        maxH="4em"
+      >
+        <Tooltip label="Giraffe icons created by Freepik - Flaticon">
+          <Image
+            src={process.env.PUBLIC_URL + '/draff-logo.webp'}
+            height="2.8em"
+            marginTop={2}
+            marginLeft="1em"
+          />
+        </Tooltip>
+        <Code background="transparent" p={4} fontSize="17px">
+          <Text as="span" color="orange.600" fontWeight={'bold'}>
+            /dev/null
+          </Text>
+          <Text as="span" fontWeight={'bold'} color="yellow.800">
+            /untitled
+          </Text>
+        </Code>
+      </Flex>
 
-        <Show above="sm">
-          <AlertDescription>
-            This is a pre-release ("double zero") of{' '}
-            <Link href={'#'}>draff.io</Link>. Remember,{' '}
-            <b>All data is lost immediately on close or refresh</b>. Thanks for
-            visiting ❤️
-          </AlertDescription>
-        </Show>
-        <Hide above="sm">
-          <AlertDescription>It's re-release!</AlertDescription>
-        </Hide>
-      </Alert>
+      {/* DRAFF BODY  */}
       <Flex
         height="100%"
         maxHeight="100%"
         bg="gray.700"
-        margin={{ base: '0', md: '1em' }}
+        margin={{ base: '0', md: '0 1em' }}
+        marginTop="0"
         direction={{ base: 'column', md: 'row' }}
       >
         <Flex
@@ -151,53 +148,25 @@ export const Draff = () => {
           minWidth={{ base: '100%', md: '50%' }}
           bg="yellow.100"
         >
-          <Flex bg="yellow.50" justify={'center'}>
-            <Tooltip label="Soon." placement={'top'}>
-              <Button
-                margin={2}
-                size="sm"
-                minW="7em"
-                borderRadius={0}
-                colorScheme="orange"
-                isDisabled={true}
-                rightIcon={<FaPaperPlane />}
-              >
-                Share
-              </Button>
-            </Tooltip>
-            <Button
-              margin={2}
-              size="sm"
-              minW="7em"
-              borderRadius={0}
-              colorScheme="orange"
-              isDisabled={true}
-              rightIcon={<FaSave />}
-            >
-              Save
-            </Button>
-            <Button
-              margin={2}
-              size="sm"
-              minW="7em"
-              borderRadius={0}
-              colorScheme={'teal'}
-              onClick={onRun}
-            >
-              Run <Icon as={HiMiniPlay} marginLeft={1} />
-            </Button>
-          </Flex>
+          <EditorButtons onRun={onRun} />
           <Box bg="yellow.100" maxH={{ base: '60vh', md: '100%' }}>
             <Editor editorRef={editorRef} />
           </Box>
         </Flex>
-        <Terminal
-          lines={termLines}
-          onNewLines={onNewTermLines}
-          onClear={onTermClear}
-          onConsole={onTermConsole}
-        />
+        <Flex
+          direction="column"
+          minWidth={{ base: '100%', md: '50%' }}
+          bgColor="gray.700"
+        >
+          <TerminalButtons onClear={onTermClear} />
+          <Terminal
+            lines={termLines}
+            onNewLines={onNewTermLines}
+            onClear={onTermClear}
+            onConsole={onTermConsole}
+          />
+        </Flex>
       </Flex>
-    </Stack>
+    </Box>
   );
 };
