@@ -16,6 +16,8 @@ import {
 import { Tooltip } from '@chakra-ui/react';
 import { EditorButtons } from './EditorButtons';
 import { TerminalButtons } from './TerminalButtons';
+import { useParams } from 'react-router-dom';
+import { useGetCode } from '../../api/useGetCode';
 
 const defaultLines = [
   ...`       ,"-.
@@ -35,13 +37,20 @@ export const Draff = () => {
   const editorRef = useRef<HTMLDivElement>(null);
   const [termLines, setTermLines] = useState(defaultLines);
   const [editor, setEditor] = useState<EditorView | null>(null);
+  const params = useParams();
+
+  const username = params.username ?? 'dev/null';
+  const codeFile = params.codeFile ?? 'untitled';
+
+  const { code, error } = useGetCode({ username, codeFile });
+  console.log('GOT CODE?', code);
 
   useEffect(() => {
-    if (!editorRef?.current || editor) {
+    if (!code || !editorRef?.current || editor) {
       return;
     }
     const editorView = new EditorView({
-      doc: '// Your code here',
+      doc: '',
       extensions: [
         basicSetup,
         javascript(),
@@ -64,6 +73,19 @@ export const Draff = () => {
     setEditor(editorView);
     return () => editorView.destroy();
   }, [editorRef]);
+
+  useEffect(() => {
+    if (!editor || !code) {
+      return;
+    }
+    editor.dispatch({
+      changes: {
+        from: 0,
+        to: editor.state.doc.length,
+        insert: code,
+      },
+    });
+  }, [editor, code]);
 
   const onNewTermLines = (lines: string[]) =>
     setTermLines([...termLines, ...lines.map((line) => syntaxify(line))]);
@@ -126,10 +148,10 @@ export const Draff = () => {
         </Tooltip>
         <Code background="transparent" p={4} fontSize="17px">
           <Text as="span" color="orange.600" fontWeight={'bold'}>
-            /dev/null
+            {username}
           </Text>
           <Text as="span" fontWeight={'bold'} color="yellow.800">
-            /untitled
+            /{codeFile}
           </Text>
         </Code>
       </Flex>
