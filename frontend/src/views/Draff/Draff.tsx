@@ -43,7 +43,7 @@ export const Draff = () => {
   const username = params.username ?? 'dev/null';
   const codeFile = params.codeFile ?? 'untitled';
 
-  const { code, error } = useGetCode({ username, codeFile });
+  const { code, error, loading } = useGetCode({ username, codeFile });
   console.log('GOT CODE?', code);
 
   useEffect(() => {
@@ -74,6 +74,29 @@ export const Draff = () => {
     setEditor(editorView);
     return () => editorView.destroy();
   }, [editorRef]);
+
+  useEffect(() => {
+    if (!editor) {
+      return;
+    }
+    let interval: ReturnType<typeof setInterval>;
+    if (loading) {
+      interval = setInterval(
+        () =>
+          editor.dispatch({
+            changes: {
+              from: 0,
+              to: 10,
+              insert: Math.random().toString(),
+            },
+          }),
+        100,
+      );
+    }
+    return () => {
+      clearInterval(interval);
+    };
+  }, [loading, editor]);
 
   useEffect(() => {
     if (!editor || !code) {

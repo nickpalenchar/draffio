@@ -8,10 +8,11 @@ interface UseGetCadeParams {
 export const useGetCode: ({ username, codeFile }: UseGetCadeParams) => {
   code: string;
   error: string;
+  loading: boolean;
 } = ({ username, codeFile }) => {
-  const [code, setCode] = useState('// Your code here...');
+  const [code, setCode] = useState(' ');
   const [error, setError] = useState('');
-  // const [loading]
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (username !== 'dev/null') {
@@ -19,22 +20,29 @@ export const useGetCode: ({ username, codeFile }: UseGetCadeParams) => {
         async (res: any) => {
           if (res.status !== 200) {
             console.error('error', { res });
-            return setError(res.body ?? 'An error occured');
+            return setError(res.body ?? 'An error occurred');
           }
           const data = await res.json();
           const code = data.text;
           if (!code) {
+            setLoading(false);
             return setError('Problem with fetching the Draff');
           }
+          await new Promise(res => setTimeout(res, 3000));
           setCode(code);
+          setLoading(false);
         },
       );
     }
   }, [username, codeFile]);
 
-  if (username === 'dev/null') {
-    return { code, error: '' };
+  if (loading) {
+    return {code: '          ', error: '', loading: true}; 
   }
 
-  return { code, error };
+  if (username === 'dev/null') {
+    return { code, error: '', loading: false };
+  }
+  // return {code: '', error: '', loading: true}
+  return { code, error, loading: false };
 };
