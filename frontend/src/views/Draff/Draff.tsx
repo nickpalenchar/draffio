@@ -1,5 +1,13 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Flex, Box, Text, Image, Code } from '@chakra-ui/react';
+import {
+  Flex,
+  Box,
+  Text,
+  Image,
+  Code,
+  Container,
+  Highlight,
+} from '@chakra-ui/react';
 import { Terminal } from '../../components/Terminal';
 import { Editor } from '../../components/Editor';
 import { EditorView, basicSetup } from 'codemirror';
@@ -19,6 +27,7 @@ import { TerminalButtons } from './TerminalButtons';
 import { useNavigation, useParams } from 'react-router-dom';
 import { useGetCode } from '../../api/useGetCode';
 import { generateCodeLoad } from '../../api/_codeLoadSequence';
+import { DraffNotFoundError } from './DraffNotFoundError';
 
 const defaultLines = [
   ...`       ,"-.
@@ -48,7 +57,7 @@ export const Draff = () => {
   console.log('GOT CODE?', code);
 
   useEffect(() => {
-    if (!code || !editorRef?.current || editor) {
+    if (!code || !editorRef?.current || editor || error) {
       return;
     }
     const editorView = new EditorView({
@@ -74,10 +83,10 @@ export const Draff = () => {
     });
     setEditor(editorView);
     return () => editorView.destroy();
-  }, [editorRef]);
+  }, [editorRef, error]);
 
   useEffect(() => {
-    if (!editor) {
+    if (!editor || error) {
       return;
     }
     let interval: ReturnType<typeof setInterval>;
@@ -180,9 +189,29 @@ export const Draff = () => {
             /{codeFile}
           </Text>
         </Code>
+        <Box p={4} paddingLeft={0} fontSize="17px">
+          {error === 'Not Found!' && (
+            <Text as="span" color="white">
+              <Highlight
+                query="404"
+                styles={{
+                  px: '2',
+                  py: '1',
+                  rounded: 'full',
+                  bg: 'red.600',
+                  color: 'gray.100',
+                  fontFamily: 'monospace',
+                  fontWeight: 'bold',
+                }}
+              >
+                404
+              </Highlight>
+            </Text>
+          )}
+        </Box>
       </Flex>
 
-      {/* DRAFF BODY  */}
+      {/* DRAFF BODY */}
       <Flex
         height="100%"
         maxHeight="100%"
@@ -196,9 +225,11 @@ export const Draff = () => {
           minWidth={{ base: '100%', md: '50%' }}
           bg="yellow.100"
         >
-          <EditorButtons onRun={onRun} disable={loading} />
+          <EditorButtons onRun={onRun} disable={loading || !!error} />
           <Box bg="yellow.100" maxH={{ base: '60vh', md: '100%' }}>
-            <Editor editorRef={editorRef} />
+            {error === 'Not Found!' && <DraffNotFoundError />}
+
+            {!error && <Editor editorRef={editorRef} />}
           </Box>
         </Flex>
         <Flex

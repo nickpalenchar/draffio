@@ -15,9 +15,16 @@ export const useGetCode: ({ username, codeFile }: UseGetCadeParams) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (error) {
+      return;
+    }
     if (username !== 'dev/null') {
       fetch(`${process.env.REACT_APP_API_GW}/code/${username}/${codeFile}`).then(
         async (res: any) => {
+          if (res.status === 404) {
+            setLoading(false);
+            return setError('Not Found!');
+          }
           if (res.status !== 200) {
             console.error('error', { res });
             return setError(res.body ?? 'An error occurred');
@@ -32,12 +39,15 @@ export const useGetCode: ({ username, codeFile }: UseGetCadeParams) => {
           setCode(code);
           setLoading(false);
         },
-      );
+      )
     }
-  }, [username, codeFile]);
+  }, [username, codeFile, error]);
 
   if (loading) {
-    return {code: '          ', error: '', loading: true}; 
+    return {code: '  ', error: '', loading: true}; 
+  }
+  if (error) {
+    return { code: ' ', error, loading: false}
   }
 
   if (username === 'dev/null') {
