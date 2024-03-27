@@ -16,7 +16,7 @@ import {
 import { Tooltip } from '@chakra-ui/react';
 import { EditorButtons } from './EditorButtons';
 import { TerminalButtons } from './TerminalButtons';
-import { useParams } from 'react-router-dom';
+import { useNavigation, useParams } from 'react-router-dom';
 import { useGetCode } from '../../api/useGetCode';
 
 const defaultLines = [
@@ -38,6 +38,7 @@ export const Draff = () => {
   const [termLines, setTermLines] = useState(defaultLines);
   const [editor, setEditor] = useState<EditorView | null>(null);
   const params = useParams();
+  const navigation = useNavigation();
 
   const username = params.username ?? 'dev/null';
   const codeFile = params.codeFile ?? 'untitled';

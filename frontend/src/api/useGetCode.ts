@@ -11,6 +11,7 @@ export const useGetCode: ({ username, codeFile }: UseGetCadeParams) => {
 } = ({ username, codeFile }) => {
   const [code, setCode] = useState('// Your code here...');
   const [error, setError] = useState('');
+  // const [loading]
 
   useEffect(() => {
     if (username !== 'dev/null') {
@@ -21,7 +22,6 @@ export const useGetCode: ({ username, codeFile }: UseGetCadeParams) => {
             return setError(res.body ?? 'An error occured');
           }
           const data = await res.json();
-          console.log({ res: data });
           const code = data.text;
           if (!code) {
             return setError('Problem with fetching the Draff');
