@@ -18,6 +18,7 @@ import { EditorButtons } from './EditorButtons';
 import { TerminalButtons } from './TerminalButtons';
 import { useNavigation, useParams } from 'react-router-dom';
 import { useGetCode } from '../../api/useGetCode';
+import { generateCodeLoad } from '../../api/_codeLoadSequence';
 
 const defaultLines = [
   ...`       ,"-.
@@ -87,7 +88,7 @@ export const Draff = () => {
             changes: {
               from: 0,
               to: 10,
-              insert: Math.random().toString(),
+              insert: generateCodeLoad(),
             },
           }),
         100,
