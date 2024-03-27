@@ -81,6 +81,7 @@ export const Draff = () => {
       return;
     }
     let interval: ReturnType<typeof setInterval>;
+    let weight = 1000;
     if (loading) {
       interval = setInterval(
         () =>
@@ -88,7 +89,7 @@ export const Draff = () => {
             changes: {
               from: 0,
               to: 10,
-              insert: generateCodeLoad(),
+              insert: generateCodeLoad((weight /= 1.2)),
             },
           }),
         100,
@@ -147,7 +148,7 @@ export const Draff = () => {
   };
 
   const onRun = () => {
-    if (!editor) {
+    if (!editor || loading) {
       return null;
     }
     const code = editor.state.doc.toString();
@@ -195,7 +196,7 @@ export const Draff = () => {
           minWidth={{ base: '100%', md: '50%' }}
           bg="yellow.100"
         >
-          <EditorButtons onRun={onRun} />
+          <EditorButtons onRun={onRun} disable={loading} />
           <Box bg="yellow.100" maxH={{ base: '60vh', md: '100%' }}>
             <Editor editorRef={editorRef} />
           </Box>
