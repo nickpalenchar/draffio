@@ -88,8 +88,8 @@ export const Draff = () => {
           editor.dispatch({
             changes: {
               from: 0,
-              to: 10,
-              insert: generateCodeLoad((weight /= 1.2)),
+              to: editor.state.doc.length,
+              insert: generateCodeLoad(weight),
             },
           }),
         100,
