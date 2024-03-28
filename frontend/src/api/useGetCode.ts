@@ -15,7 +15,7 @@ export const useGetCode: ({ username, codeFile }: UseGetCadeParams) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (error) {
+    if (error || !loading) {
       return;
     }
     if (username !== 'dev/null') {
@@ -35,13 +35,16 @@ export const useGetCode: ({ username, codeFile }: UseGetCadeParams) => {
             setLoading(false);
             return setError('Problem with fetching the Draff');
           }
-          await new Promise(res => setTimeout(res, 3000));
           setCode(code);
           setLoading(false);
         },
       )
+    } else {
+      setLoading(false);
+      setError('');
+      setCode('// Your code here...')
     }
-  }, [username, codeFile, error]);
+  }, [username, codeFile, error, loading]);
 
   if (loading) {
     return {code: '  ', error: '', loading: true}; 
