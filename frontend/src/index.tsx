@@ -40,6 +40,10 @@ const router = createBrowserRouter([
     path: 'js/new',
     element: <Draff />,
   },
+  {
+    path: '/:username/:codeFile',
+    element: <Draff />,
+  },
 ]);
 root.render(
   <React.StrictMode>

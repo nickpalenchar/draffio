@@ -1,5 +1,13 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Flex, Box, Text, Image, Code } from '@chakra-ui/react';
+import {
+  Flex,
+  Box,
+  Text,
+  Image,
+  Code,
+  Container,
+  Highlight,
+} from '@chakra-ui/react';
 import { Terminal } from '../../components/Terminal';
 import { Editor } from '../../components/Editor';
 import { EditorView, basicSetup } from 'codemirror';
@@ -16,6 +24,10 @@ import {
 import { Tooltip } from '@chakra-ui/react';
 import { EditorButtons } from './EditorButtons';
 import { TerminalButtons } from './TerminalButtons';
+import { useNavigation, useParams } from 'react-router-dom';
+import { useGetCode } from '../../api/useGetCode';
+import { generateCodeLoad } from '../../api/_codeLoadSequence';
+import { DraffNotFoundError } from './DraffNotFoundError';
 
 const defaultLines = [
   ...`       ,"-.
@@ -35,13 +47,21 @@ export const Draff = () => {
   const editorRef = useRef<HTMLDivElement>(null);
   const [termLines, setTermLines] = useState(defaultLines);
   const [editor, setEditor] = useState<EditorView | null>(null);
+  const params = useParams();
+  const navigation = useNavigation();
+
+  const username = params.username ?? 'dev/null';
+  const codeFile = params.codeFile ?? 'untitled';
+
+  const { code, error, loading } = useGetCode({ username, codeFile });
+  console.log('GOT CODE?', code);
 
   useEffect(() => {
-    if (!editorRef?.current || editor) {
+    if (!code || !editorRef?.current || editor || error) {
       return;
     }
     const editorView = new EditorView({
-      doc: '// Your code here',
+      doc: '',
       extensions: [
         basicSetup,
         javascript(),
@@ -63,7 +83,44 @@ export const Draff = () => {
     });
     setEditor(editorView);
     return () => editorView.destroy();
-  }, [editorRef]);
+  }, [editorRef, error]);
+
+  useEffect(() => {
+    if (!editor || error) {
+      return;
+    }
+    let interval: ReturnType<typeof setInterval>;
+    let weight = 1000;
+    if (loading) {
+      interval = setInterval(
+        () =>
+          editor.dispatch({
+            changes: {
+              from: 0,
+              to: editor.state.doc.length,
+              insert: generateCodeLoad(weight),
+            },
+          }),
+        100,
+      );
+    }
+    return () => {
+      clearInterval(interval);
+    };
+  }, [loading, editor]);
+
+  useEffect(() => {
+    if (!editor || !code) {
+      return;
+    }
+    editor.dispatch({
+      changes: {
+        from: 0,
+        to: editor.state.doc.length,
+        insert: code,
+      },
+    });
+  }, [editor, code]);
 
   const onNewTermLines = (lines: string[]) =>
     setTermLines([...termLines, ...lines.map((line) => syntaxify(line))]);
@@ -100,7 +157,7 @@ export const Draff = () => {
   };
 
   const onRun = () => {
-    if (!editor) {
+    if (!editor || loading) {
       return null;
     }
     const code = editor.state.doc.toString();
@@ -126,15 +183,35 @@ export const Draff = () => {
         </Tooltip>
         <Code background="transparent" p={4} fontSize="17px">
           <Text as="span" color="orange.600" fontWeight={'bold'}>
-            /dev/null
+            {username}
           </Text>
           <Text as="span" fontWeight={'bold'} color="yellow.800">
-            /untitled
+            /{codeFile}
           </Text>
         </Code>
+        <Box p={4} paddingLeft={0} fontSize="17px">
+          {error === 'Not Found!' && (
+            <Text as="span" color="white">
+              <Highlight
+                query="404"
+                styles={{
+                  px: '2',
+                  py: '1',
+                  rounded: 'full',
+                  bg: 'red.600',
+                  color: 'gray.100',
+                  fontFamily: 'monospace',
+                  fontWeight: 'bold',
+                }}
+              >
+                404
+              </Highlight>
+            </Text>
+          )}
+        </Box>
       </Flex>
 
-      {/* DRAFF BODY  */}
+      {/* DRAFF BODY */}
       <Flex
         height="100%"
         maxHeight="100%"
@@ -148,9 +225,11 @@ export const Draff = () => {
           minWidth={{ base: '100%', md: '50%' }}
           bg="yellow.100"
         >
-          <EditorButtons onRun={onRun} />
+          <EditorButtons onRun={onRun} disable={loading || !!error} />
           <Box bg="yellow.100" maxH={{ base: '60vh', md: '100%' }}>
-            <Editor editorRef={editorRef} />
+            {error === 'Not Found!' && <DraffNotFoundError />}
+
+            {!error && <Editor editorRef={editorRef} />}
           </Box>
         </Flex>
         <Flex

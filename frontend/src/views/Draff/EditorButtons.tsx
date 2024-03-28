@@ -5,9 +5,13 @@ import { HiMiniPlay } from 'react-icons/hi2';
 
 interface EditorButtonProps {
   onRun: MouseEventHandler<HTMLButtonElement>;
+  disable: boolean;
 }
 
-export const EditorButtons: FC<EditorButtonProps> = ({ onRun }) => {
+export const EditorButtons: FC<EditorButtonProps> = ({
+  onRun,
+  disable = false,
+}) => {
   return (
     <>
       <Flex bg="yellow.50" justify={'center'}>
@@ -39,6 +43,7 @@ export const EditorButtons: FC<EditorButtonProps> = ({ onRun }) => {
           margin={2}
           size="sm"
           minW="7em"
+          isDisabled={disable}
           borderRadius={0}
           colorScheme={'teal'}
           onClick={onRun}
