@@ -1,0 +1,21 @@
+{
+  "Resources": {
+    "DynamoDraffTable": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "KeySchema": [
+          { "AttributeName": "username", "KeyType": "HASH"},
+          { "AttributeName": "draffname", "KeyType": "RANGE"}
+        ],
+        "AttributeDefinitions": [
+          { "AttributeName": "username", "AttributeType": "S" },
+          { "AttributeName": "draffname", "AttributeType": "S" }
+        ],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 2,
+          "WriteCapacityUnits": 2
+        }
+      }
+    }
+  }
+}
