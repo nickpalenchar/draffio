@@ -54,6 +54,11 @@ Resources:
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
 
+  # getDraffFunction: # TODO after s3 code bucket
+  #   Type: AWS::Serverless::Function
+  #   Properties:
+  #     CodeUri: backend/
+  #     Handler: src/handlers/get-draff.handler
   # This is a Lambda function config associated with the source code: get-by-id.js
   getByIdFunction:
     Type: AWS::Serverless::Function
@@ -161,6 +166,40 @@ Resources:
               AWS:SourceArn: !Join ['', ['arn:aws:cloudfront::', !Ref "AWS::AccountId",
                   ":distribution/", !Ref CloudFrontDistribution]]
   # CloudFront Distribution for hosting the single page app website
+  DraffBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      Tags:
+        - Key: LogicalName
+          Value: draffio-draffs
+        - Key: ManagedBy
+          Value: draffio-sam
+      VersioningConfiguration:
+        Status: Suspended
+  DraffBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref DraffBucket
+      PolicyDocument: {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Sid": "Statement1",
+                "Effect": "Allow",
+                "Principal": {
+                    "AWS": [
+                      # TODO after
+                        # !Ref "arn:aws:iam::939117166617:role/service-role/draffio-get-code-role-8m9n3b0d", TODO
+                        # "arn:aws:iam::939117166617:role/service-role/draffio-apigw-get-draffcode-role-2gttln85"
+                    ]
+                },
+                "Action": "s3:GetObject",
+                "Resource": "arn:aws:s3:::draffio-code/@draffio/*"
+            }
+        ]
+      }
+
+
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -195,7 +234,7 @@ Resources:
           MinTTL: 0
           DefaultTTL: 3600
           MaxTTL: 86400
-        PriceClass: PriceClass_200
+        PriceClass: PriceClass_100
         Restrictions:
           GeoRestriction:
             RestrictionType: whitelist
@@ -206,6 +245,11 @@ Resources:
             - DE
         ViewerCertificate:
           CloudFrontDefaultCertificate: true
+        CustomErrorResponses:
+          - ErrorCode: 403
+            ResponseCode: 200
+            ResponsePagePath: '/index.html'
+            ErrorCachingMinTTL: 5
   CloudFrontOriginAccessControl:
     Type: AWS::CloudFront::OriginAccessControl
     Properties:
