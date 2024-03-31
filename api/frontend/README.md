@@ -1,36 +1,9 @@
-# SAM starter Front End Application
+# DEPLOYMENT
 
-## Project setup
-```
-npm install
-```
+even/odd deployment (based on blue/green)
 
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
+use the repl version
 
-### Compiles and minifies for production
-```
-npm run build
-```
+evens go to draffio-deployment-even
 
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Runs unit tests
-```
-npm run test
-```
-
-### Connect to Backend
-
-Make backend API endpoint accessible as an environment variable. For local, create a `.env` file, Here is an example: 
-```
-VUE_APP_API_ENDPOINT=http://127.0.0.1:3000/
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+odd go to draff.io (soon to change)

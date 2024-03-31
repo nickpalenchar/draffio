@@ -25,21 +25,21 @@ cd frontend/ && npm install
 touch .env
 
 # Add the API Gateway endpoint to the .env file
-echo "VUE_APP_API_ENDPOINT=$api_gateway_endpoint" > .env
+echo "REACT_APP_API_GW=$api_gateway_endpoint" > .env
 
 # Confirm that the endpoint has been added to the .env file
 echo "The API Gateway endpoint has been added to the .env file:"
 cat .env
 
 # Create distribution for deployment
-npm run build && cd dist/
+npm run build && cd build/
+cp index.html 404.html
 
 # Sync distribution with S3
 aws s3 sync . s3://$s3_bucket_name/
 
 # Create cloudfront invalidation and capture id for next step
 invalidation_output=$(aws cloudfront create-invalidation --distribution-id $cloudfront_distribution_id --output json --paths "/*")
-echo INVALIaa $invalidation_output
 
 invalidation_id=$(echo "$invalidation_output" | jq '.Invalidation.Id' )
 
