@@ -14,7 +14,7 @@ Resources:
   ApiGatewayApi:
     Type: AWS::Serverless::Api
     Properties:
-      StageName: Prod
+      StageName: v1
       Cors:
         AllowMethods: "'OPTIONS, POST, GET'"
         AllowHeaders: "'Content-Type'"
@@ -136,6 +136,7 @@ Resources:
   WebSiteBucket:
     Type: AWS::S3::Bucket
     Properties:
+      BucketName: 'draffio-website'
       BucketEncryption:
         ServerSideEncryptionConfiguration:
         - BucketKeyEnabled: true

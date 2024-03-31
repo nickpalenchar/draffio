@@ -4,7 +4,7 @@ version = 0.1
 
 [default]
 [default.global.parameters]
-stack_name = "draffio-skel-stack-test"
+stack_name = "draffio-infra"
 
 [default.build.parameters]
 cached = true

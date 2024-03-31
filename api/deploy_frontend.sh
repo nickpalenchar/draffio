@@ -1,7 +1,8 @@
 #!/bin/bash
+set -eou pipefail
 
 # Get user input for stack name
-read -p "Enter the name of the CloudFormation stack: " stack_name
+stack_name=${1:-"draffio-infra"}
 
 # Get the API Gateway URL from the stack
 api_gateway_endpoint=$(aws cloudformation describe-stacks --stack-name "$stack_name" --query "Stacks[0].Outputs[?OutputKey=='APIGatewayEndpoint'].OutputValue" --output text)
@@ -37,11 +38,10 @@ npm run build && cd dist/
 aws s3 sync . s3://$s3_bucket_name/
 
 # Create cloudfront invalidation and capture id for next step
-invalidation_output=$(aws cloudfront create-invalidation --distribution-id $cloudfront_distribution_id --paths "/*")
-invalidation_id=$(echo "$invalidation_output" | grep -oP '(?<="Id": ")[^"]+')
+invalidation_output=$(aws cloudfront create-invalidation --distribution-id $cloudfront_distribution_id --output json --paths "/*")
+echo INVALIaa $invalidation_output
 
-# Wait for cloudfront invalidation to complete
-aws cloudfront wait invalidation-completed --distribution-id $cloudfront_distribution_id --id $invalidation_id
+invalidation_id=$(echo "$invalidation_output" | jq '.Invalidation.Id' )
 
 # Get cloudfront domain name and validate
 cloudfront_domain_name=$(aws cloudfront list-distributions --query "DistributionList.Items[?Id=='$cloudfront_distribution_id'].DomainName" --output text)
