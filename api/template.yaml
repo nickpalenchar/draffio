@@ -116,6 +116,30 @@ Resources:
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
 
+  getDraffFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/ 
+      Handler: src/handlers/get-draff.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      Description: Get a Draff from Dynamo
+      Policies:
+      - DynamoDBReadPolicy:
+          TableName: !Ref SampleTable
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /code/{username}/{draffName}
+            Method: GET
+            RequestParameters:
+              - method.request.path.username
+              - method.request.path.draffName
+            RestApiId:
+              Ref: ApiGatewayApi
+      
   # This is a Lambda function config associated with the source code: put-item.js
   putItemFunction:
     Type: AWS::Serverless::Function
