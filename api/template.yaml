@@ -4,6 +4,12 @@ Description: >-
 Transform:
 - AWS::Serverless-2016-10-31
 
+Parameters:
+  DomainNameParam:
+    Type: String
+    Description: Domain name for staging endpoint
+    Default: "zibzu.online"
+
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
 Resources:
@@ -34,7 +40,7 @@ Resources:
       Cors:
         AllowMethods: "'OPTIONS, POST, GET'"
         AllowHeaders: "'Content-Type'"
-        AllowOrigin: "'*'" #DO NOT USE THIS VALUE IN PRODUCTION - https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-cors.html
+        AllowOrigin: !Join ["", ["'", !Ref DomainNameParam, "'" ]]
 
   # This is a Lambda function config associated with the source code: get-by-id.js
   getAllItemsFunction:
@@ -214,6 +220,15 @@ Resources:
       }
 
 
+  CloudFrontSSLCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !Ref DomainNameParam
+      DomainValidationOptions:
+        - DomainName: !Ref DomainNameParam
+          ValidationDomain: !Ref DomainNameParam
+      ValidationMethod: DNS
+
   CloudFrontDistribution:
     Type: AWS::CloudFront::Distribution
     Properties:
@@ -224,6 +239,8 @@ Resources:
           OriginAccessControlId: !GetAtt CloudFrontOriginAccessControl.Id
           S3OriginConfig:
             OriginAccessIdentity: ''
+        Aliases:
+          - !Ref DomainNameParam
         Enabled: true
         DefaultRootObject: index.html
         HttpVersion: http2
@@ -258,7 +275,9 @@ Resources:
             - GB
             - DE
         ViewerCertificate:
-          CloudFrontDefaultCertificate: true
+          AcmCertificateArn: !Ref CloudFrontSSLCertificate
+          MinimumProtocolVersion: "TLSv1.2_2021"
+          SslSupportMethod: sni-only
         CustomErrorResponses:
           - ErrorCode: 403
             ResponseCode: 200
