@@ -1,25 +1,23 @@
-import { ScanCommand } from '@aws-sdk/lib-dynamodb';
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { S3, GetObjectCommand } from "@aws-sdk/client-s3";
 import {
   DynamoDBDocumentClient,
   GetCommand,
-  QueryCommand
 } from "@aws-sdk/lib-dynamodb";
 //DynamoDB Endpoint
 const ENDPOINT_OVERRIDE = process.env.ENDPOINT_OVERRIDE;
 let ddbClient;
 if (ENDPOINT_OVERRIDE) {
-    ddbClient = new DynamoDBClient({ endpoint: ENDPOINT_OVERRIDE });    
+    ddbClient = new DynamoDBClient({ endpoint: ENDPOINT_OVERRIDE });
 }
 else {
-    ddbClient = new DynamoDBClient({});    // Use default values for DynamoDB endpoint
+    ddbClient = new DynamoDBClient({});
     console.warn("No value for ENDPOINT_OVERRIDE provided for DynamoDB, using default");
 }
 
 const client = new DynamoDBClient({ apiVersion: "2012-08-10" });
 const dynamo = DynamoDBDocumentClient.from(client);
-const TableName = "Draffio-Draffs";
+const TableName = process.env.DRAFF_TABLE;
 const s3 = new S3();
 
 const response = (obj) => {
@@ -36,10 +34,10 @@ export const handler = async (event) => {
   
   const { draffName, username } = event.pathParameters;
   
-  return response({
-    statusCode: 200,
-    body: JSON.stringify({text: '() => "hello, world"'})
-  })
+  // return response({
+  //   statusCode: 200,
+  //   body: JSON.stringify({text: '() => "hello, world"'})
+  // })
   if (!draffName || !username) {
     return response({
       statusCode: 404,
