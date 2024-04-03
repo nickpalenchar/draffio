@@ -28,6 +28,19 @@ Resources:
             }
         ]
       }
+      Policies:
+        - PolicyName: DynamoDBReadPolicy
+          PolicyDocument: {
+            Version: "2012-10-17",
+            Statement: [
+            {
+              Effect: Allow,
+              Action: [
+                "dynamodb:GetItem"
+              ],
+              Resource: !GetAtt draffTable.Arn
+            }]
+          }
 
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -52,37 +65,6 @@ Resources:
   #     Handler: src/handlers/get-draff.handler
   #     Role: !Ref GetDraffExecutionRole
   # This is a Lambda function config associated with the source code: get-by-id.js
-
-  getByIdFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      CodeUri: backend/
-      Handler: src/handlers/get-by-id.getByIdHandler
-      Runtime: nodejs20.x
-      Architectures:
-      - x86_64
-      MemorySize: 128
-      Timeout: 100
-      Description: A simple example includes a HTTP get method to get one item by
-        id from a DynamoDB table.
-      Policies:
-        # Give Create/Read/Update/Delete Permissions to the SampleTable
-      - DynamoDBCrudPolicy:
-          TableName: !Ref draffTable
-      Environment:
-        Variables:
-          # Make table name accessible as environment variable from function code during execution
-          SAMPLE_TABLE: !Ref draffTable
-          # Make DynamoDB endpoint accessible as environment variable from function code during execution
-          ENDPOINT_OVERRIDE: ''
-      Events:
-        Api:
-          Type: Api
-          Properties:
-            Path: /{id}
-            Method: GET
-            RestApiId:
-              Ref: ApiGatewayApi
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
 
@@ -94,10 +76,19 @@ Resources:
       Runtime: nodejs20.x
       Architectures:
         - x86_64
-      Description: Get a Draff from Dynamo
+      Description: Get a Draff from Dynamo.
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          DRAFF_TABLE: !Ref draffTable
+          # Make DynamoDB endpoint accessible as environment variable from function code during execution
+          ENDPOINT_OVERRIDE: ''
+      Role: !GetAtt GetDraffExecutionRole.Arn
       Policies:
       - DynamoDBReadPolicy:
           TableName: !Ref draffTable
+      - S3ReadPolicy:
+          BucketName: !Ref DraffBucket
       Events:
         Api:
           Type: Api
@@ -172,6 +163,8 @@ Resources:
           Value: draffio-sam
       VersioningConfiguration:
         Status: Suspended
+      PublicAccessBlockConfiguration:
+        RestrictPublicBuckets: false
   DraffBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:

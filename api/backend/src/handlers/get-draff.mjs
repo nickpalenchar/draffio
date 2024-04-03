@@ -38,6 +38,11 @@ export const handler = async (event) => {
   //   statusCode: 200,
   //   body: JSON.stringify({text: '() => "hello, world"'})
   // })
+  if (!TableName) {
+    return response({ statusCode: 500, message: 'Cannot find table name.'});
+  }
+  console.log('Using Dynamo Tablename', { TableName })
+  console.log('Params:', { draffName, username })
   if (!draffName || !username) {
     return response({
       statusCode: 404,
@@ -52,15 +57,17 @@ export const handler = async (event) => {
         draffname: draffName,
       }
     };
+    console.log('Constructed params for dynamo.', { TableName })
     const result = await dynamo.send(new GetCommand(params));
     
     if (!result.Item) {
+      console.error('No Item found in database')
       return response({
         statusCode: 404,
         body: JSON.stringify({ error: "Not Found", $from: "Table Query Result" })
       });
     }
-    
+    console.log('Using s3 bucket from Db', { Bucket: result.Item.s3Bucket });
     const s3Result = await s3.send(new GetObjectCommand({
       Bucket: result.Item.s3Bucket,
       Key: result.Item.s3Key
