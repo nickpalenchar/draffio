@@ -8,7 +8,6 @@ Parameters:
   DomainNameParam:
     Type: String
     Description: Domain name for staging endpoint
-    Default: "zibzu.online"
 
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
@@ -41,6 +40,38 @@ Resources:
               Resource: !GetAtt draffTable.Arn
             }]
           }
+  PutTmpDraffExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument: {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                },
+                "Action": "sts:AssumeRole"
+            }
+        ]
+      }
+      Policies:
+        - PolicyName: TmpDraffPolicy
+          PolicyDocument: {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": "dynamodb:PutItem",
+                "Resource": !GetAtt draffTable.Arn,
+                "Condition": {
+                  "ForAnyValue:StringEquals": {
+                    "dynamodb:LeadingKeys": "tmp"
+                    }
+                  }
+                }
+              ]
+            }
 
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -54,6 +85,13 @@ Resources:
         AllowMethods: "'OPTIONS, POST, GET'"
         AllowHeaders: "'Content-Type'"
         AllowOrigin: !Join ["", ["'", !Ref DomainNameParam, "'" ]]
+      Models:
+        TmpDraff:
+          type: object
+          required: [ 'body' ]
+          properties:
+            body:
+              type: string
 
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
@@ -81,6 +119,7 @@ Resources:
         Variables:
           # Make table name accessible as environment variable from function code during execution
           DRAFF_TABLE: !Ref draffTable
+          ALLOW_ORIGIN: !Ref DomainNameParam
           # Make DynamoDB endpoint accessible as environment variable from function code during execution
           ENDPOINT_OVERRIDE: ''
       Role: !GetAtt GetDraffExecutionRole.Arn
@@ -98,6 +137,42 @@ Resources:
             RequestParameters:
               - method.request.path.username
               - method.request.path.draffName
+            RestApiId:
+              Ref: ApiGatewayApi
+
+  newTmpDraffFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: backend/ 
+      Handler: src/handlers/get-draff.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      Description: Get a Draff from Dynamo.
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          DRAFF_TABLE: !Ref draffTable
+          S3_BUCKET: !Ref DraffBucket
+          ALLOW_ORIGIN: !Ref DomainNameParam
+          # Make DynamoDB endpoint accessible as environment variable from function code during execution
+          ENDPOINT_OVERRIDE: ''
+      Role: !GetAtt PutTmpDraffExecutionRole.Arn
+      Policies:
+      - DynamoDBReadPolicy:
+          TableName: !Ref draffTable
+      - S3ReadPolicy:
+          BucketName: !Ref DraffBucket
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /code/tmp/
+            Method: POST
+            RequestModel:
+              Model: TmpDraff
+              Required: true
+              ValidateBody: true
             RestApiId:
               Ref: ApiGatewayApi
       
@@ -128,7 +203,6 @@ Resources:
   WebSiteBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: 'draffio-website'
       BucketEncryption:
         ServerSideEncryptionConfiguration:
         - BucketKeyEnabled: true

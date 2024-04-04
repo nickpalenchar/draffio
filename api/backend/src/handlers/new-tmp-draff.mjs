@@ -62,7 +62,6 @@ export const handler = async (event) => {
   const draffName = generateCuid();
 
   try {
-
     const result = await s3.putObject({
       Bucket: S3_BUCKET,
       Key: [username, draffName].join('/'),
