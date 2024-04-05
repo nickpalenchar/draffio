@@ -26,7 +26,7 @@ const response = (obj) => {
   return { 
     ...obj,
     headers: {
-      'Access-Control-Allow-Origin': process.env.ALLOW_ORIGIN,
+      'Access-Control-Allow-Origin': '*', //process.env.ALLOW_ORIGIN,
     }
   };
 };
@@ -40,8 +40,8 @@ const generateCuid = () => {
 };
 
 export const handler = async (event) => {
-
-  const { body: draffBody } = event.body;
+  console.log('event:', event);
+  const { body: draffBody } = JSON.parse(event.body);
   console.log('Parsed draff body', { draffBody });
 
   if (!draffBody) {
