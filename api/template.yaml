@@ -257,6 +257,15 @@ Resources:
                 },
                 "Action": "s3:GetObject",
                 "Resource": { "Fn::Join": ["", ["arn:aws:s3:::", { "Ref": "DraffBucket"}, "/*" ]] }
+            },
+              {
+                "Sid": "Statement1",
+                "Effect": "Allow",
+                "Principal": {
+                    "AWS": { "Fn::GetAtt": ["PutTmpDraffExecutionRole", "Arn"] }
+                },
+                "Action": "s3:PutObject",
+                "Resource": { "Fn::Join": ["", ["arn:aws:s3:::", { "Ref": "DraffBucket"}, "/*" ]] }
             }
         ]
       }

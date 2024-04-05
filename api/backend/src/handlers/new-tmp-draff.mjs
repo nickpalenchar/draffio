@@ -1,6 +1,7 @@
-import { Readable } from "stream";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
-import { S3, PutObjectCommand } from "@aws-sdk/client-s3";
+import { S3 } from "@aws-sdk/client-s3";
+import { Upload } from '@aws-sdk/lib-storage';
+
 import {
   DynamoDBDocumentClient,
   PutCommand,
@@ -62,11 +63,22 @@ export const handler = async (event) => {
   const draffName = generateCuid();
 
   try {
-    const result = await s3.putObject({
-      Bucket: S3_BUCKET,
-      Key: [username, draffName].join('/'),
-      Body: Readable.from(draffBody),
+    // const result = await s3.putObject({
+    //   Bucket: S3_BUCKET,
+    //   Key: [username, draffName].join('/'),
+    //   Body: Readable.from(draffBody),
+    // });
+    console.log('uploading to s3');
+    const uploadReq = new Upload({
+      client: s3,
+      params: {
+        Bucket: S3_BUCKET,
+        Key: [username, draffName].join('/'),
+        Body: draffBody
+      }
     });
+    console.log('formed request, uploading...');
+    const result = await uploadReq.done();
 
     console.log('successful result from s3: ', { result });
 
@@ -74,11 +86,11 @@ export const handler = async (event) => {
       TableName,
       Item: {
         username,
-        draffName,
+        draffname: draffName,
         creationDate: Date.now(),
       }
     };
-    console.log('Constructed params for dynamo.', { TableName })
+    console.log('Constructed params for dynamo.', { params })
     await dynamo.send(new PutCommand(params));
 
     return response({
@@ -88,6 +100,7 @@ export const handler = async (event) => {
     })
     
   } catch (e) {
+    console.error("Stopped in error: " + e.toString());
     return response({
       statusCode: 500,
       body: JSON.stringify({ ok: false, e: e.toString() })
