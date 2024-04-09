@@ -9,15 +9,16 @@ type SaveCode = (params: SaveCodeParams) => Promise<void>;
 export const useSaveCode = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>();
-
+  console.log('env is ', process.env.NODE_ENV);
   const saveCode = useCallback<SaveCode>(async ({ code, username }) => {
     setIsLoading(true);
     setError(null);
-    return fetch(`${process.env.REACT_APP_API_GW}/code/${username}}`, {
+    return fetch(`${process.env.REACT_APP_API_GW}code/${username}`, {
       method: 'post',
       headers: {
         'Content-Type': 'application/json',
       },
+      mode: process.env.NODE_ENV === 'development' ? 'no-cors' : 'cors',
       body: JSON.stringify({
         code
       }),

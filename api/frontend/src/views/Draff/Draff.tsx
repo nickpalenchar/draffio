@@ -168,18 +168,18 @@ export const Draff = () => {
     const code = editor.state.doc.toString();
     onExecute(code, true);
   };
-  const onSave = () => {
+  const onSave = async () => {
     console.log('on save called');
     if (!editor || loading) {
       console.log('no editor!');
       return;
     }
     console.log('wip save');
-    // saveCode({
-    //   username: 'tmp',
-    //   code: editor.state.doc.toString(),
-    // });
-    // console.log('got ressssssssss', res);
+    const res = await saveCode({
+      username: 'tmp',
+      code: editor.state.doc.toString(),
+    });
+    console.log('got ressssssssss', res);
   };
 
   return (
