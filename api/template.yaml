@@ -125,6 +125,7 @@ Resources:
       Timeout: 30
       Role: !GetAtt GetDraffExecutionRole.Arn
       Policies:
+      - AWSLambdaBasicExecutionRole
       - DynamoDBReadPolicy:
           TableName: !Ref draffTable
       - S3ReadPolicy:
@@ -161,6 +162,7 @@ Resources:
           ENDPOINT_OVERRIDE: ''
       Role: !GetAtt PutTmpDraffExecutionRole.Arn
       Policies:
+      - AWSLambdaBasicExecutionRole
       - DynamoDBReadPolicy:
           TableName: !Ref draffTable
       - S3ReadPolicy:

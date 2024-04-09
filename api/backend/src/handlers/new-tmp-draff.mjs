@@ -27,7 +27,7 @@ const response = (obj) => {
   return { 
     ...obj,
     headers: {
-      'Access-Control-Allow-Origin': '*', //process.env.ALLOW_ORIGIN,
+      'Access-Control-Allow-Origin': process.env.ALLOW_ORIGIN,
     }
   };
 };
@@ -41,8 +41,11 @@ const generateCuid = () => {
 };
 
 export const handler = async (event) => {
-  console.log('event:', event);
+  if (typeof event.body === 'object') {
+    console.log('body is object, keys:', Object.keys(event.body));
+  }
   const { body: draffBody } = JSON.parse(event.body);
+
   console.log('Parsed draff body', { draffBody });
 
   if (!draffBody) {
@@ -61,42 +64,41 @@ export const handler = async (event) => {
   console.log('Using Dynamo Tablename', { TableName })
   const username = 'tmp';
   const draffName = generateCuid();
-
   try {
-    // const result = await s3.putObject({
-    //   Bucket: S3_BUCKET,
-    //   Key: [username, draffName].join('/'),
-    //   Body: Readable.from(draffBody),
-    // });
-    console.log('uploading to s3');
+    console.debug('uploading to s3');
+    const s3Key = [username, draffName].join('/');
     const uploadReq = new Upload({
       client: s3,
       params: {
         Bucket: S3_BUCKET,
-        Key: [username, draffName].join('/'),
+        Key: s3Key,
         Body: draffBody
       }
     });
-    console.log('formed request, uploading...');
+    console.debug('formed request, uploading...');
     const result = await uploadReq.done();
 
-    console.log('successful result from s3: ', { result });
+    console.debug('successful result from s3: ', { result });
 
     const params = {
       TableName,
       Item: {
         username,
         draffname: draffName,
+        s3Bucket: S3_BUCKET,
+        s3Key,
         creationDate: Date.now(),
       }
     };
-    console.log('Constructed params for dynamo.', { params })
+    console.debug('Constructed params for dynamo.', { params });
     await dynamo.send(new PutCommand(params));
 
     return response({
       statusCode: 201,
-      draffName,
-      username: 'tmp'
+      body: JSON.stringify({
+        draffName,
+        username: 'tmp'
+      }),
     })
     
   } catch (e) {
