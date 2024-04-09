@@ -1,21 +1,11 @@
+import crypto from "crypto";
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { S3 } from "@aws-sdk/client-s3";
 import { Upload } from '@aws-sdk/lib-storage';
-
 import {
   DynamoDBDocumentClient,
   PutCommand,
 } from "@aws-sdk/lib-dynamodb";
-
-const ENDPOINT_OVERRIDE = process.env.ENDPOINT_OVERRIDE;
-let ddbClient;
-if (ENDPOINT_OVERRIDE) {
-    ddbClient = new DynamoDBClient({ endpoint: ENDPOINT_OVERRIDE });
-}
-else {
-    ddbClient = new DynamoDBClient({});
-    console.warn("No value for ENDPOINT_OVERRIDE provided for DynamoDB, using default");
-}
 
 const client = new DynamoDBClient({ apiVersion: "2012-08-10" });
 const dynamo = DynamoDBDocumentClient.from(client);
@@ -31,7 +21,6 @@ const response = (obj) => {
     }
   };
 };
-import crypto from "crypto";
 
 // Generate a CUID using crypto
 const generateCuid = () => {
@@ -46,7 +35,7 @@ export const handler = async (event) => {
   }
   const { body: draffBody } = JSON.parse(event.body);
 
-  console.log('Parsed draff body', { draffBody });
+  console.debug('Parsed draff body', { draffBody });
 
   if (!draffBody) {
     return response({

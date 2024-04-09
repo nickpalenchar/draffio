@@ -158,8 +158,6 @@ Resources:
           DRAFF_TABLE: !Ref draffTable
           S3_BUCKET: !Ref DraffBucket
           ALLOW_ORIGIN: !Ref DomainNameParam
-          # Make DynamoDB endpoint accessible as environment variable from function code during execution
-          ENDPOINT_OVERRIDE: ''
       Role: !GetAtt PutTmpDraffExecutionRole.Arn
       Policies:
       - AWSLambdaBasicExecutionRole

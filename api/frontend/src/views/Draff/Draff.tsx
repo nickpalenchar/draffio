@@ -163,6 +163,9 @@ export const Draff = () => {
     const code = editor.state.doc.toString();
     onExecute(code, true);
   };
+  const onSave = async () => {
+    console.log('wip save');
+  };
 
   return (
     <Box maxHeight="100vh" bgColor="yellow.50">
@@ -225,7 +228,11 @@ export const Draff = () => {
           minWidth={{ base: '100%', md: '50%' }}
           bg="yellow.100"
         >
-          <EditorButtons onRun={onRun} disable={loading || !!error} />
+          <EditorButtons
+            onRun={onRun}
+            onSave={onSave}
+            disable={loading || !!error}
+          />
           <Box bg="yellow.100" maxH={{ base: '60vh', md: '100%' }}>
             {error === 'Not Found!' && <DraffNotFoundError />}
 

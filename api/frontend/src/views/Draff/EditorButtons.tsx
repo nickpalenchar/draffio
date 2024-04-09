@@ -1,17 +1,30 @@
 import { Button, Flex, Icon, Tooltip } from '@chakra-ui/react';
-import React, { FC, MouseEventHandler } from 'react';
+import React, { FC, MouseEventHandler, useCallback, useState } from 'react';
 import { FaPaperPlane, FaSave } from 'react-icons/fa';
 import { HiMiniPlay } from 'react-icons/hi2';
 
 interface EditorButtonProps {
   onRun: MouseEventHandler<HTMLButtonElement>;
+  onSave: MouseEventHandler<HTMLButtonElement>;
   disable: boolean;
 }
 
 export const EditorButtons: FC<EditorButtonProps> = ({
   onRun,
+  onSave,
   disable = false,
 }) => {
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+
+  const onClick = useCallback<MouseEventHandler<HTMLButtonElement>>(
+    async (event) => {
+      setIsSaving(true);
+      await onSave(event);
+      setIsSaving(false);
+    },
+    [],
+  );
+
   return (
     <>
       <Flex bg="yellow.50" justify={'center'}>
@@ -34,8 +47,11 @@ export const EditorButtons: FC<EditorButtonProps> = ({
           minW="7em"
           borderRadius={0}
           colorScheme="orange"
-          isDisabled={true}
           rightIcon={<FaSave />}
+          loadingText="Saving"
+          isDisabled={isSaving}
+          isLoading={isSaving}
+          onClick={onClick}
         >
           Save
         </Button>
