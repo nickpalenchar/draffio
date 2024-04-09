@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import {
   Flex,
   Box,
@@ -28,6 +28,7 @@ import { useNavigation, useParams } from 'react-router-dom';
 import { useGetCode } from '../../api/useGetCode';
 import { generateCodeLoad } from '../../api/_codeLoadSequence';
 import { DraffNotFoundError } from './DraffNotFoundError';
+import { useSaveCode } from '../../api/useSaveCode';
 
 const defaultLines = [
   ...`       ,"-.
@@ -48,6 +49,10 @@ export const Draff = () => {
   const [termLines, setTermLines] = useState(defaultLines);
   const [editor, setEditor] = useState<EditorView | null>(null);
   const params = useParams();
+
+  // Save button
+  const [isSaving, setIsSaving] = useState(false);
+  const { saveCode } = useSaveCode();
   const navigation = useNavigation();
 
   const username = params.username ?? 'dev/null';
@@ -163,8 +168,18 @@ export const Draff = () => {
     const code = editor.state.doc.toString();
     onExecute(code, true);
   };
-  const onSave = async () => {
+  const onSave = () => {
+    console.log('on save called');
+    if (!editor || loading) {
+      console.log('no editor!');
+      return;
+    }
     console.log('wip save');
+    // saveCode({
+    //   username: 'tmp',
+    //   code: editor.state.doc.toString(),
+    // });
+    // console.log('got ressssssssss', res);
   };
 
   return (
@@ -231,6 +246,7 @@ export const Draff = () => {
           <EditorButtons
             onRun={onRun}
             onSave={onSave}
+            isSaving={isSaving}
             disable={loading || !!error}
           />
           <Box bg="yellow.100" maxH={{ base: '60vh', md: '100%' }}>

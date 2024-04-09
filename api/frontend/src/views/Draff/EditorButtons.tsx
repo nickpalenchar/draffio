@@ -7,24 +7,15 @@ interface EditorButtonProps {
   onRun: MouseEventHandler<HTMLButtonElement>;
   onSave: MouseEventHandler<HTMLButtonElement>;
   disable: boolean;
+  isSaving: boolean;
 }
 
 export const EditorButtons: FC<EditorButtonProps> = ({
   onRun,
   onSave,
   disable = false,
+  isSaving = false,
 }) => {
-  const [isSaving, setIsSaving] = useState<boolean>(false);
-
-  const onClick = useCallback<MouseEventHandler<HTMLButtonElement>>(
-    async (event) => {
-      setIsSaving(true);
-      await onSave(event);
-      setIsSaving(false);
-    },
-    [],
-  );
-
   return (
     <>
       <Flex bg="yellow.50" justify={'center'}>
@@ -51,7 +42,7 @@ export const EditorButtons: FC<EditorButtonProps> = ({
           loadingText="Saving"
           isDisabled={isSaving}
           isLoading={isSaving}
-          onClick={onClick}
+          onClick={onSave}
         >
           Save
         </Button>
