@@ -174,12 +174,17 @@ export const Draff = () => {
       console.log('no editor!');
       return;
     }
-    console.log('wip save');
+    setIsSaving(true);
     const res = await saveCode({
       username: 'tmp',
       code: editor.state.doc.toString(),
     });
-    console.log('got ressssssssss', res);
+    console.log('Response from SaveCode:', res);
+    const username = 'tmp'; // TODO real { username: '...' }
+    const draffName = 'draffname'; //TODO real ({ draffName: '...' });
+    const newUrl = `/${username}/${draffName}`;
+    window.history.pushState({ path: newUrl }, '', newUrl);
+    setIsSaving(false);
   };
 
   return (
