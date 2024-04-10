@@ -13,25 +13,29 @@ export const useSaveCode = () => {
   const saveCode = useCallback<SaveCode>(async ({ code, username }) => {
     setIsLoading(true);
     setError(null);
-    return fetch(`${process.env.REACT_APP_API_GW}code/${username}`, {
+    const fetchUrl = `${process.env.REACT_APP_API_GW}code/${username}`;
+    console.log('urli si', fetchUrl);
+    return fetch(fetchUrl, {
       method: 'post',
       headers: {
-        'Content-Type': 'application/json',
+        'content-type': 'application/json',
       },
       mode: process.env.NODE_ENV === 'development' ? 'no-cors' : 'cors',
       body: JSON.stringify({
-        code
+        code,
       }),
-    }).then(async (res) => {
-      console.log('the result is ', res);
-      const body = await res.json();
-      console.log('BODY,', body);
-      setIsLoading(false);
-    }).catch((error) => {
-      setIsLoading(false);
-      setError(`Could not save (${error?.statusCode ?? 500})`);
     })
-  }, [])
+      .then(async (res) => {
+        console.log('the result is ', res);
+        const body = await res.json();
+        console.log('BODY,', body);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        setIsLoading(false);
+        setError(`Could not save (${error?.statusCode ?? 500})`);
+      });
+  }, []);
 
-  return { isLoading, error, saveCode }
-}
+  return { isLoading, error, saveCode };
+};

@@ -33,22 +33,28 @@ export const handler = async (event) => {
   if (typeof event.body === 'object') {
     console.log('body is object, keys:', Object.keys(event.body));
   }
-  const { body: draffBody } = JSON.parse(event.body);
+  const { code: draffBody } = JSON.parse(event.body);
 
   console.debug('Parsed draff body', { draffBody });
 
   if (!draffBody) {
     return response({
       statusCode: 400,
-      message: 'No body to save.'
-    })
+      body: JSON.stringify({ message: 'No body to save.', ok: false })
+    });
   }
 
   if (!TableName) {
-    return response({ statusCode: 500, message: 'Cannot find table name.'});
+    return response({
+      statusCode: 500,
+      body: JSON.stringify({message: 'Cannot find table name.' })
+    });
   }
   if (!S3_BUCKET) {
-    return response({statusCode: 500, message: 'No s3 bucket configured'});
+    return response({
+      statusCode: 500, 
+      body: JSON.stringify({message: 'No s3 bucket configured'})
+    });
   }
   console.log('Using Dynamo Tablename', { TableName })
   const username = 'tmp';
