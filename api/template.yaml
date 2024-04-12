@@ -98,9 +98,9 @@ Resources:
       Models:
         TmpDraff:
           type: object
-          required: [ 'body' ]
+          required: [ 'code' ]
           properties:
-            body:
+            code:
               type: string
 
   # Each Lambda function is defined by properties:
@@ -145,6 +145,9 @@ Resources:
   newTmpDraffFunction:
     Type: AWS::Serverless::Function
     Properties:
+      LoggingConfig:
+        ApplicationLogLevel: DEBUG
+        SystemLogLevel: DEBUG
       CodeUri: backend/ 
       Handler: src/handlers/new-tmp-draff.handler
       Runtime: nodejs20.x
