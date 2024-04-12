@@ -24,7 +24,7 @@ const response = (obj) => {
   return { 
     ...obj,
     headers: {
-      'Access-Control-Allow-Origin': process.env.ALLOW_ORIGIN,
+      'Access-Control-Allow-Origin': `https://${process.env.ALLOW_ORIGIN}`,
     }
   };
 };

@@ -94,7 +94,7 @@ Resources:
       Cors:
         AllowMethods: "'OPTIONS, POST, GET'"
         AllowHeaders: "'Content-Type'"
-        AllowOrigin: !Join ["", ["'", !Ref DomainNameParam, "'" ]]
+        AllowOrigin: !Join ["", ["'", "https://", !Ref DomainNameParam, "'" ]]
       Models:
         TmpDraff:
           type: object
