@@ -49,17 +49,20 @@ export const Draff = () => {
   const [termLines, setTermLines] = useState(defaultLines);
   const [editor, setEditor] = useState<EditorView | null>(null);
   const params = useParams();
+  const [username, setUsername] = useState(params.username ?? 'dev/null');
+  const [draffName, setDraffName] = useState(params.codeFile ?? 'untitled');
 
   // Save button
   const [isSaving, setIsSaving] = useState(false);
   const { saveCode } = useSaveCode();
   const navigation = useNavigation();
 
-  const username = params.username ?? 'dev/null';
-  const codeFile = params.codeFile ?? 'untitled';
+  const prefix = username.startsWith('@') ? '' : '/';
 
-  const { code, error, loading } = useGetCode({ username, codeFile });
-  console.log('GOT CODE?', code);
+  const { code, error, loading } = useGetCode({
+    username,
+    codeFile: draffName,
+  });
 
   useEffect(() => {
     if (!code || !editorRef?.current || editor || error) {
@@ -169,21 +172,20 @@ export const Draff = () => {
     onExecute(code, true);
   };
   const onSave = async () => {
-    console.log('on save called');
     if (!editor || loading) {
       console.log('no editor!');
       return;
     }
     setIsSaving(true);
-    const res = await saveCode({
+    const { username, draffName } = await saveCode({
       username: 'tmp',
       code: editor.state.doc.toString(),
     });
-    console.log('Response from SaveCode:', res);
-    const username = 'tmp'; // TODO real { username: '...' }
-    const draffName = 'draffname'; //TODO real ({ draffName: '...' });
+
     const newUrl = `/${username}/${draffName}`;
     window.history.pushState({ path: newUrl }, '', newUrl);
+    setUsername(username);
+    setDraffName(draffName);
     setIsSaving(false);
   };
 
@@ -206,10 +208,10 @@ export const Draff = () => {
         </Tooltip>
         <Code background="transparent" p={4} fontSize="17px">
           <Text as="span" color="orange.600" fontWeight={'bold'}>
-            {username}
+            {prefix + username}
           </Text>
           <Text as="span" fontWeight={'bold'} color="yellow.800">
-            /{codeFile}
+            /{draffName}
           </Text>
         </Code>
         <Box p={4} paddingLeft={0} fontSize="17px">

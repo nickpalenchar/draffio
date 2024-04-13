@@ -4,17 +4,21 @@ interface SaveCodeParams {
   code: string;
   username: string;
 }
-type SaveCode = (params: SaveCodeParams) => Promise<void>;
+interface SaveCodeReturn {
+  isLoading: boolean;
+  error: string | null;
+  saveCode: (params: SaveCodeParams) => Promise<{ username: string, draffName: string }>;
+}
 
-export const useSaveCode = () => {
+
+export const useSaveCode = (): SaveCodeReturn => {
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>();
-  console.log('env is ', process.env.NODE_ENV);
-  const saveCode = useCallback<SaveCode>(async ({ code, username }) => {
+  const [error, setError] = useState<string | null>(null);
+
+  const saveCode = useCallback<SaveCodeReturn['saveCode']>(async ({ code, username }) => {
     setIsLoading(true);
     setError(null);
     const fetchUrl = `${process.env.REACT_APP_API_GW}code/${username}`;
-    console.log('urli si', fetchUrl);
     return fetch(fetchUrl, {
       method: 'post',
       headers: {
@@ -28,13 +32,13 @@ export const useSaveCode = () => {
       .then(async (res) => {
         console.log('the result is ', res);
         const body = await res.json();
-        console.log('BODY,', body);
-        setIsLoading(false);
+        console.log('BODY,', body); // {draffName: 'c25cc2f0dd705bb3cec07', username: 'tmp'}
+        if (!body.draffName || !body.username) {
+          console.error('Bad response from server');
+          throw new Error(`Could not save (500)`);
+        }
+        return { draffName: body.draffName, username: body.username}
       })
-      .catch((error) => {
-        setIsLoading(false);
-        setError(`Could not save (${error?.statusCode ?? 500})`);
-      });
   }, []);
 
   return { isLoading, error, saveCode };
