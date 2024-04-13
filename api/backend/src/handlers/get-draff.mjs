@@ -24,7 +24,7 @@ const response = (obj) => {
   return { 
     ...obj,
     headers: {
-      'Access-Control-Allow-Origin': '*'
+      'Access-Control-Allow-Origin': `https://${process.env.ALLOW_ORIGIN}`,
     }
   };
 };
@@ -34,10 +34,6 @@ export const handler = async (event) => {
   
   const { draffName, username } = event.pathParameters;
   
-  // return response({
-  //   statusCode: 200,
-  //   body: JSON.stringify({text: '() => "hello, world"'})
-  // })
   if (!TableName) {
     return response({ statusCode: 500, message: 'Cannot find table name.'});
   }

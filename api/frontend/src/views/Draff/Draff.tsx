@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
 import {
   Flex,
   Box,
@@ -28,6 +28,7 @@ import { useNavigation, useParams } from 'react-router-dom';
 import { useGetCode } from '../../api/useGetCode';
 import { generateCodeLoad } from '../../api/_codeLoadSequence';
 import { DraffNotFoundError } from './DraffNotFoundError';
+import { useSaveCode } from '../../api/useSaveCode';
 
 const defaultLines = [
   ...`       ,"-.
@@ -48,13 +49,20 @@ export const Draff = () => {
   const [termLines, setTermLines] = useState(defaultLines);
   const [editor, setEditor] = useState<EditorView | null>(null);
   const params = useParams();
+  const [username, setUsername] = useState(params.username ?? 'dev/null');
+  const [draffName, setDraffName] = useState(params.codeFile ?? 'untitled');
+
+  // Save button
+  const [isSaving, setIsSaving] = useState(false);
+  const { saveCode } = useSaveCode();
   const navigation = useNavigation();
 
-  const username = params.username ?? 'dev/null';
-  const codeFile = params.codeFile ?? 'untitled';
+  const prefix = username.startsWith('@') ? '' : '/';
 
-  const { code, error, loading } = useGetCode({ username, codeFile });
-  console.log('GOT CODE?', code);
+  const { code, error, loading } = useGetCode({
+    username,
+    codeFile: draffName,
+  });
 
   useEffect(() => {
     if (!code || !editorRef?.current || editor || error) {
@@ -163,6 +171,23 @@ export const Draff = () => {
     const code = editor.state.doc.toString();
     onExecute(code, true);
   };
+  const onSave = async () => {
+    if (!editor || loading) {
+      console.log('no editor!');
+      return;
+    }
+    setIsSaving(true);
+    const { username, draffName } = await saveCode({
+      username: 'tmp',
+      code: editor.state.doc.toString(),
+    });
+
+    const newUrl = `/${username}/${draffName}`;
+    window.history.pushState({ path: newUrl }, '', newUrl);
+    setUsername(username);
+    setDraffName(draffName);
+    setIsSaving(false);
+  };
 
   return (
     <Box maxHeight="100vh" bgColor="yellow.50">
@@ -183,10 +208,10 @@ export const Draff = () => {
         </Tooltip>
         <Code background="transparent" p={4} fontSize="17px">
           <Text as="span" color="orange.600" fontWeight={'bold'}>
-            {username}
+            {prefix + username}
           </Text>
           <Text as="span" fontWeight={'bold'} color="yellow.800">
-            /{codeFile}
+            /{draffName}
           </Text>
         </Code>
         <Box p={4} paddingLeft={0} fontSize="17px">
@@ -225,7 +250,12 @@ export const Draff = () => {
           minWidth={{ base: '100%', md: '50%' }}
           bg="yellow.100"
         >
-          <EditorButtons onRun={onRun} disable={loading || !!error} />
+          <EditorButtons
+            onRun={onRun}
+            onSave={onSave}
+            isSaving={isSaving}
+            disable={loading || !!error}
+          />
           <Box bg="yellow.100" maxH={{ base: '60vh', md: '100%' }}>
             {error === 'Not Found!' && <DraffNotFoundError />}
 

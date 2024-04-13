@@ -8,7 +8,6 @@ Parameters:
   DomainNameParam:
     Type: String
     Description: Domain name for staging endpoint
-    Default: "zibzu.online"
 
 # Resources declares the AWS resources that you want to include in the stack
 # https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/resources-section-structure.html
@@ -41,7 +40,49 @@ Resources:
               Resource: !GetAtt draffTable.Arn
             }]
           }
-
+  PutTmpDraffExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument: {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Effect": "Allow",
+                "Principal": {
+                    "Service": "lambda.amazonaws.com"
+                },
+                "Action": "sts:AssumeRole"
+            }
+        ]
+      }
+      Policies:
+        - PolicyName: TmpDraffPolicy
+          PolicyDocument: {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": "dynamodb:PutItem",
+                "Resource": !GetAtt draffTable.Arn,
+                "Condition": {
+                  "ForAnyValue:StringEquals": {
+                    "dynamodb:LeadingKeys": "tmp"
+                    }
+                  }
+              },
+              {
+                "Effect": "Allow",
+                "Action": "s3:PutObject",
+                "Resource": !GetAtt DraffBucket.Arn,
+                "Condition": {
+                  "ForAnyValue:StringEquals": {
+                    "s3:prefix": "tmp"
+                    }
+                  }
+              }
+            ]
+          }
+  
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
 
@@ -53,18 +94,15 @@ Resources:
       Cors:
         AllowMethods: "'OPTIONS, POST, GET'"
         AllowHeaders: "'Content-Type'"
-        AllowOrigin: !Join ["", ["'", !Ref DomainNameParam, "'" ]]
+        AllowOrigin: !Join ["", ["'", "https://", !Ref DomainNameParam, "'" ]]
+      Models:
+        TmpDraff:
+          type: object
+          required: [ 'code' ]
+          properties:
+            code:
+              type: string
 
-  # Each Lambda function is defined by properties:
-  # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
-
-  # getDraffFunction: # TODO after s3 code bucket
-  #   Type: AWS::Serverless::Function
-  #   Properties:
-  #     CodeUri: backend/
-  #     Handler: src/handlers/get-draff.handler
-  #     Role: !Ref GetDraffExecutionRole
-  # This is a Lambda function config associated with the source code: get-by-id.js
   # Each Lambda function is defined by properties:
   # https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
 
@@ -81,10 +119,13 @@ Resources:
         Variables:
           # Make table name accessible as environment variable from function code during execution
           DRAFF_TABLE: !Ref draffTable
+          ALLOW_ORIGIN: !Ref DomainNameParam
           # Make DynamoDB endpoint accessible as environment variable from function code during execution
           ENDPOINT_OVERRIDE: ''
+      Timeout: 30
       Role: !GetAtt GetDraffExecutionRole.Arn
       Policies:
+      - AWSLambdaBasicExecutionRole
       - DynamoDBReadPolicy:
           TableName: !Ref draffTable
       - S3ReadPolicy:
@@ -98,6 +139,45 @@ Resources:
             RequestParameters:
               - method.request.path.username
               - method.request.path.draffName
+            RestApiId:
+              Ref: ApiGatewayApi
+
+  newTmpDraffFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      LoggingConfig:
+        ApplicationLogLevel: DEBUG
+        SystemLogLevel: DEBUG
+      CodeUri: backend/ 
+      Handler: src/handlers/new-tmp-draff.handler
+      Runtime: nodejs20.x
+      Architectures:
+        - x86_64
+      Description: Save a "tmp" draff.
+      Timeout: 30
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          DRAFF_TABLE: !Ref draffTable
+          S3_BUCKET: !Ref DraffBucket
+          ALLOW_ORIGIN: !Ref DomainNameParam
+      Role: !GetAtt PutTmpDraffExecutionRole.Arn
+      Policies:
+      - AWSLambdaBasicExecutionRole
+      - DynamoDBReadPolicy:
+          TableName: !Ref draffTable
+      - S3ReadPolicy:
+          BucketName: !Ref DraffBucket
+      Events:
+        Api:
+          Type: Api
+          Properties:
+            Path: /code/tmp/
+            Method: POST
+            RequestModel:
+              Model: TmpDraff
+              Required: true
+              ValidateBody: true
             RestApiId:
               Ref: ApiGatewayApi
       
@@ -128,7 +208,6 @@ Resources:
   WebSiteBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: 'draffio-website'
       BucketEncryption:
         ServerSideEncryptionConfiguration:
         - BucketKeyEnabled: true
@@ -180,6 +259,15 @@ Resources:
                     "AWS": { "Fn::GetAtt": ["GetDraffExecutionRole", "Arn"] }
                 },
                 "Action": "s3:GetObject",
+                "Resource": { "Fn::Join": ["", ["arn:aws:s3:::", { "Ref": "DraffBucket"}, "/*" ]] }
+            },
+              {
+                "Sid": "Statement1",
+                "Effect": "Allow",
+                "Principal": {
+                    "AWS": { "Fn::GetAtt": ["PutTmpDraffExecutionRole", "Arn"] }
+                },
+                "Action": "s3:PutObject",
                 "Resource": { "Fn::Join": ["", ["arn:aws:s3:::", { "Ref": "DraffBucket"}, "/*" ]] }
             }
         ]
