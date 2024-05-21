@@ -1,5 +1,28 @@
-import { Button, Flex, Icon, Tooltip } from '@chakra-ui/react';
-import React, { FC, MouseEventHandler, useCallback, useState } from 'react';
+import {
+  Button,
+  Flex,
+  Icon,
+  IconButton,
+  Input,
+  InputGroup,
+  InputRightElement,
+  Popover,
+  PopoverArrow,
+  PopoverBody,
+  PopoverCloseButton,
+  PopoverContent,
+  PopoverTrigger,
+  Tooltip,
+  position,
+  useToast,
+} from '@chakra-ui/react';
+import React, {
+  FC,
+  MouseEventHandler,
+  useCallback,
+  useState,
+  useRef,
+} from 'react';
 import { FaPaperPlane, FaSave } from 'react-icons/fa';
 import { HiMiniPlay } from 'react-icons/hi2';
 
@@ -8,6 +31,7 @@ interface EditorButtonProps {
   onSave: MouseEventHandler<HTMLButtonElement>;
   disable: boolean;
   isSaving: boolean;
+  shareUrl: string;
 }
 
 export const EditorButtons: FC<EditorButtonProps> = ({
@@ -15,23 +39,71 @@ export const EditorButtons: FC<EditorButtonProps> = ({
   onSave,
   disable = false,
   isSaving = false,
+  shareUrl,
 }) => {
+  const shareLinkInputRef = useRef<HTMLInputElement>(null);
+  const toast = useToast();
+  const onShare = () => {
+    console.log('sharing', shareUrl);
+  };
+
+  const onShareLinkClick = async () => {
+    console.log('click it ');
+    const input = shareLinkInputRef.current;
+    if (!input) {
+      return;
+    }
+    input.select();
+    try {
+      await navigator.clipboard.writeText(input.value);
+      toast({
+        title: 'Link copied!',
+        status: 'success',
+        duration: 1200,
+        isClosable: false,
+        position: 'top',
+      });
+    } catch (e) {}
+  };
+
+  const isNew = new URL(shareUrl).pathname === '/js/new';
+
   return (
     <>
       <Flex bg="yellow.50" justify={'center'}>
-        <Tooltip label="Soon." placement={'top'}>
-          <Button
-            margin={2}
-            size="sm"
-            minW="7em"
-            borderRadius={0}
-            colorScheme="orange"
-            isDisabled={true}
-            rightIcon={<FaPaperPlane />}
-          >
-            Share
-          </Button>
-        </Tooltip>
+        <Popover placement="top-start">
+          <Tooltip label={isNew ? 'Save first' : null} placement={'top'}>
+            <PopoverTrigger>
+              <Button
+                margin={2}
+                size="sm"
+                minW="7em"
+                borderRadius={0}
+                colorScheme="orange"
+                rightIcon={<FaPaperPlane />}
+                onClick={onShare}
+                isDisabled={isNew}
+              >
+                Share
+              </Button>
+            </PopoverTrigger>
+          </Tooltip>
+          <PopoverContent>
+            <PopoverArrow />
+            <PopoverCloseButton />
+            <PopoverBody>
+              <div>Share link below 👇</div>
+              <br />
+              <InputGroup>
+                <Input
+                  value={shareUrl}
+                  ref={shareLinkInputRef}
+                  onClick={onShareLinkClick}
+                ></Input>
+              </InputGroup>
+            </PopoverBody>
+          </PopoverContent>
+        </Popover>
         <Button
           margin={2}
           size="sm"
