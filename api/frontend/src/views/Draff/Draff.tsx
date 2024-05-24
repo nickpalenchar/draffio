@@ -1,19 +1,23 @@
-import React, { useRef, useEffect, useState, useCallback } from 'react';
 import {
-  Flex,
   Box,
-  Text,
-  Image,
   Code,
-  Container,
+  Flex,
   Highlight,
+  Image,
+  Text,
+  Tooltip,
 } from '@chakra-ui/react';
-import { Terminal } from '../../components/Terminal';
-import { Editor } from '../../components/Editor';
-import { EditorView, basicSetup } from 'codemirror';
 import { javascript } from '@codemirror/lang-javascript';
-import { keymap } from '@codemirror/view';
 import { Prec } from '@codemirror/state';
+import { keymap } from '@codemirror/view';
+import { EditorView, basicSetup } from 'codemirror';
+import React, { useEffect, useRef, useState } from 'react';
+import { useNavigation, useParams } from 'react-router-dom';
+import { generateCodeLoad } from '../../api/_codeLoadSequence';
+import { useGetCode } from '../../api/useGetCode';
+import { useSaveCode } from '../../api/useSaveCode';
+import { Editor } from '../../components/Editor';
+import { Terminal } from '../../components/Terminal';
 import { CallbackFn, ConsoleFn, safeEval } from '../../util/safeEval';
 import {
   MetaSyntox,
@@ -21,14 +25,9 @@ import {
   asPlainText,
   syntaxify,
 } from '../../util/syntaxify';
-import { Tooltip } from '@chakra-ui/react';
+import { DraffNotFoundError } from './DraffNotFoundError';
 import { EditorButtons } from './EditorButtons';
 import { TerminalButtons } from './TerminalButtons';
-import { useNavigation, useParams } from 'react-router-dom';
-import { useGetCode } from '../../api/useGetCode';
-import { generateCodeLoad } from '../../api/_codeLoadSequence';
-import { DraffNotFoundError } from './DraffNotFoundError';
-import { useSaveCode } from '../../api/useSaveCode';
 
 const defaultLines = [
   ...`       ,"-.
@@ -51,11 +50,11 @@ export const Draff = () => {
   const params = useParams();
   const [username, setUsername] = useState(params.username ?? 'dev/null');
   const [draffName, setDraffName] = useState(params.codeFile ?? 'untitled');
+  const [shareUrl, setShareUrl] = useState(window.location.href);
 
   // Save button
   const [isSaving, setIsSaving] = useState(false);
   const { saveCode } = useSaveCode();
-  const navigation = useNavigation();
 
   const prefix = username.startsWith('@') ? '' : '/';
 
@@ -184,6 +183,7 @@ export const Draff = () => {
 
     const newUrl = `/${username}/${draffName}`;
     window.history.pushState({ path: newUrl }, '', newUrl);
+    setShareUrl(`${window.location.origin}${newUrl}`);
     setUsername(username);
     setDraffName(draffName);
     setIsSaving(false);
@@ -254,6 +254,7 @@ export const Draff = () => {
             onRun={onRun}
             onSave={onSave}
             isSaving={isSaving}
+            shareUrl={shareUrl}
             disable={loading || !!error}
           />
           <Box bg="yellow.100" maxH={{ base: '60vh', md: '100%' }}>
