@@ -55,7 +55,6 @@ export const Draff = () => {
   // Save button
   const [isSaving, setIsSaving] = useState(false);
   const { saveCode } = useSaveCode();
-  const navigation = useNavigation();
 
   const prefix = username.startsWith('@') ? '' : '/';
 
@@ -184,6 +183,7 @@ export const Draff = () => {
 
     const newUrl = `/${username}/${draffName}`;
     window.history.pushState({ path: newUrl }, '', newUrl);
+    setShareUrl(`${window.location.origin}${newUrl}`);
     setUsername(username);
     setDraffName(draffName);
     setIsSaving(false);

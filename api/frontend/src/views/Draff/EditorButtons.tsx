@@ -43,9 +43,6 @@ export const EditorButtons: FC<EditorButtonProps> = ({
 }) => {
   const shareLinkInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
-  const onShare = () => {
-    console.log('sharing', shareUrl);
-  };
 
   const onShareLinkClick = async () => {
     console.log('click it ');
@@ -72,8 +69,8 @@ export const EditorButtons: FC<EditorButtonProps> = ({
     <>
       <Flex bg="yellow.50" justify={'center'}>
         <Popover placement="top-start">
-          <Tooltip label={isNew ? 'Save first' : null} placement={'top'}>
-            <PopoverTrigger>
+          <Tooltip label={isNew ? 'Save first' : null} placement="bottom">
+            {isNew ? (
               <Button
                 margin={2}
                 size="sm"
@@ -81,12 +78,25 @@ export const EditorButtons: FC<EditorButtonProps> = ({
                 borderRadius={0}
                 colorScheme="orange"
                 rightIcon={<FaPaperPlane />}
-                onClick={onShare}
                 isDisabled={isNew}
               >
                 Share
               </Button>
-            </PopoverTrigger>
+            ) : (
+              <PopoverTrigger>
+                <Button
+                  margin={2}
+                  size="sm"
+                  minW="7em"
+                  borderRadius={0}
+                  colorScheme="orange"
+                  rightIcon={<FaPaperPlane />}
+                  isDisabled={isNew}
+                >
+                  Share
+                </Button>
+              </PopoverTrigger>
+            )}
           </Tooltip>
           <PopoverContent>
             <PopoverArrow />

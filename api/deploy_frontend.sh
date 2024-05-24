@@ -3,14 +3,18 @@ set -eou pipefail
 
 # Get user input for stack name
 stack_name=${1:-"draffio-infra"}
+echo "stack name: $stack_name"
 
 # Get the API Gateway URL from the stack
+echo "getting api gateway endpoint..."
 api_gateway_endpoint=$(aws cloudformation describe-stacks --stack-name "$stack_name" --query "Stacks[0].Outputs[?OutputKey=='APIGatewayEndpoint'].OutputValue" --output text)
 
 # Get the CloudFront Distribution ID from the stack
+echo "getting cloudfront distribution id..."
 cloudfront_distribution_id=$(aws cloudformation describe-stacks --stack-name "$stack_name" --query "Stacks[0].Outputs[?OutputKey=='CloudFrontDistributionId'].OutputValue" --output text)
 
 # Get the S3 Bucket Name from the stack
+echo "getting s3 bucket..."
 s3_bucket_name=$(aws cloudformation describe-stacks --stack-name "$stack_name" --query "Stacks[0].Outputs[?OutputKey=='WebS3BucketName'].OutputValue" --output text)
 
 # Output the results
