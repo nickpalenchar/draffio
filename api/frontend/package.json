@@ -26,7 +26,8 @@
     "react-router-dom": "^6.21.1",
     "react-scripts": "^5.0.1",
     "typescript": "^4.9.5",
-    "web-vitals": "^2.1.4"
+    "web-vitals": "^2.1.4",
+    "@auth0/auth0-react": "^2.2.4"
   },
   "scripts": {
     "dev": "concurrently -c auto -n react,format npm:start npm:prettier:watch",

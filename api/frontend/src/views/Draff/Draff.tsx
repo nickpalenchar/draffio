@@ -28,6 +28,7 @@ import {
 import { DraffNotFoundError } from './DraffNotFoundError';
 import { EditorButtons } from './EditorButtons';
 import { TerminalButtons } from './TerminalButtons';
+import { useAuth0 } from '@auth0/auth0-react';
 
 const defaultLines = [
   ...`       ,"-.
@@ -62,6 +63,19 @@ export const Draff = () => {
     username,
     codeFile: draffName,
   });
+
+  const { user, isAuthenticated, isLoading } = useAuth0();
+  
+  // Log authentication state
+  useEffect(() => {
+    if (isLoading) {
+      console.log('Checking authentication status...');
+    } else if (isAuthenticated && user) {
+      console.log('User is authenticated:', user);
+    } else {
+      console.log('User is not authenticated (anonymous)');
+    }
+  }, [isAuthenticated, isLoading, user]);
 
   useEffect(() => {
     if (!code || !editorRef?.current || editor || error) {
