@@ -7,6 +7,11 @@ import {
   Text,
   Tooltip,
   Button,
+  Avatar,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
 } from '@chakra-ui/react';
 import { javascript } from '@codemirror/lang-javascript';
 import { Prec } from '@codemirror/state';
@@ -279,7 +284,54 @@ export const Draff = () => {
           </Box>
         </Flex>
         
-        {!isAuthenticated && (
+        {isAuthenticated ? (
+          <Menu>
+            <MenuButton>
+              <Avatar
+                src={user?.picture}
+                size="md"
+                mr={4}
+                cursor="pointer"
+                borderRadius="full"
+                border="2px solid"
+                borderColor="orange.300"
+              />
+            </MenuButton>
+            <MenuList
+              bg="yellow.50"
+              borderColor="orange.300"
+              boxShadow="md"
+            >
+              <MenuItem
+                py={3}
+                px={4}
+                _hover={{ bg: 'yellow.100' }}
+              >
+                <Box>
+                  <Text fontWeight="bold" color="orange.600">
+                    {user?.email}
+                  </Text>
+                  <Text fontSize="sm" color="gray.600">
+                    {user?.nickname || 'Anonymous Giraffe'}
+                  </Text>
+                </Box>
+              </MenuItem>
+              <MenuItem
+                onClick={() => logout({ 
+                  logoutParams: {
+                    returnTo: window.location.origin
+                  }
+                })}
+                py={2}
+                px={4}
+                _hover={{ bg: 'yellow.100' }}
+                color="orange.600"
+              >
+                Log Out
+              </MenuItem>
+            </MenuList>
+          </Menu>
+        ) : (
           <Button
             onClick={() => loginWithRedirect()}
             bgColor="orange.600"
