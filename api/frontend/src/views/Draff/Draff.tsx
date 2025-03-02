@@ -6,6 +6,12 @@ import {
   Image,
   Text,
   Tooltip,
+  Button,
+  Avatar,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
 } from '@chakra-ui/react';
 import { javascript } from '@codemirror/lang-javascript';
 import { Prec } from '@codemirror/state';
@@ -28,6 +34,7 @@ import {
 import { DraffNotFoundError } from './DraffNotFoundError';
 import { EditorButtons } from './EditorButtons';
 import { TerminalButtons } from './TerminalButtons';
+import { useAuth0 } from '@auth0/auth0-react';
 
 const defaultLines = [
   ...`       ,"-.
@@ -62,6 +69,29 @@ export const Draff = () => {
     username,
     codeFile: draffName,
   });
+
+  const { 
+    user,
+    isAuthenticated,
+    isLoading,
+    loginWithRedirect,
+    error: authError,
+    getAccessTokenSilently,
+    logout,
+  } = useAuth0();
+  
+  // Log authentication state
+  useEffect(() => {
+    if (isLoading) {
+      console.log('Checking authentication status...');
+    } else if (authError) {
+      console.error('Auth error:', authError);
+    } else if (isAuthenticated && user) {
+      console.log('User is authenticated:', user);
+    } else {
+      console.log('User is not authenticated (anonymous)');
+    }
+  }, [isAuthenticated, isLoading, user, authError]);
 
   useEffect(() => {
     if (!code || !editorRef?.current || editor || error) {
@@ -189,6 +219,21 @@ export const Draff = () => {
     setIsSaving(false);
   };
 
+  // Example of using the token for API calls
+  const callSecureApi = async () => {
+    try {
+      const token = await getAccessTokenSilently();
+      const response = await fetch('your-api-endpoint', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      // ... handle response
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <Box maxHeight="100vh" bgColor="yellow.50">
       <Flex
@@ -197,43 +242,111 @@ export const Draff = () => {
         borderBottomWidth="1px"
         verticalAlign={'center'}
         maxH="4em"
+        justifyContent="space-between"
+        alignItems="center"
       >
-        <Tooltip label="Giraffe icons created by Freepik - Flaticon">
-          <Image
-            src={process.env.PUBLIC_URL + '/draff-logo.webp'}
-            height="2.8em"
-            marginTop={2}
-            marginLeft="1em"
-          />
-        </Tooltip>
-        <Code background="transparent" p={4} fontSize="17px">
-          <Text as="span" color="orange.600" fontWeight={'bold'}>
-            {prefix + username}
-          </Text>
-          <Text as="span" fontWeight={'bold'} color="yellow.800">
-            /{draffName}
-          </Text>
-        </Code>
-        <Box p={4} paddingLeft={0} fontSize="17px">
-          {error === 'Not Found!' && (
-            <Text as="span" color="white">
-              <Highlight
-                query="404"
-                styles={{
-                  px: '2',
-                  py: '1',
-                  rounded: 'full',
-                  bg: 'red.600',
-                  color: 'gray.100',
-                  fontFamily: 'monospace',
-                  fontWeight: 'bold',
-                }}
-              >
-                404
-              </Highlight>
+        <Flex alignItems="center">
+          <Tooltip label="Giraffe icons created by Freepik - Flaticon">
+            <Image
+              src={process.env.PUBLIC_URL + '/draff-logo.webp'}
+              height="2.8em"
+              marginTop={2}
+              marginLeft="1em"
+            />
+          </Tooltip>
+          <Code background="transparent" p={4} fontSize="17px">
+            <Text as="span" color="orange.600" fontWeight={'bold'}>
+              {prefix + username}
             </Text>
-          )}
-        </Box>
+            <Text as="span" fontWeight={'bold'} color="yellow.800">
+              /{draffName}
+            </Text>
+          </Code>
+          <Box p={4} paddingLeft={0} fontSize="17px">
+            {error === 'Not Found!' && (
+              <Text as="span" color="white">
+                <Highlight
+                  query="404"
+                  styles={{
+                    px: '2',
+                    py: '1',
+                    rounded: 'full',
+                    bg: 'red.600',
+                    color: 'gray.100',
+                    fontFamily: 'monospace',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  404
+                </Highlight>
+              </Text>
+            )}
+          </Box>
+        </Flex>
+        
+        {isAuthenticated ? (
+          <Menu>
+            <MenuButton>
+              <Avatar
+                src={user?.picture}
+                size="sm"
+                mr={4}
+                cursor="pointer"
+                borderRadius="full"
+                border="2px solid"
+                borderColor="orange.300"
+                width="32px"
+                height="32px"
+              />
+            </MenuButton>
+            <MenuList
+              bg="yellow.50"
+              borderColor="orange.300"
+              boxShadow="md"
+            >
+              <MenuItem
+                py={3}
+                px={4}
+                _hover={{ bg: 'yellow.100' }}
+              >
+                <Box>
+                  <Text fontWeight="bold" color="orange.600">
+                    {user?.email}
+                  </Text>
+                  <Text fontSize="sm" color="gray.600">
+                    {user?.nickname || 'Anonymous Giraffe'}
+                  </Text>
+                </Box>
+              </MenuItem>
+              <MenuItem
+                onClick={() => logout({ 
+                  logoutParams: {
+                    returnTo: window.location.origin
+                  }
+                })}
+                py={2}
+                px={4}
+                _hover={{ bg: 'yellow.100' }}
+                color="orange.600"
+              >
+                Log Out
+              </MenuItem>
+            </MenuList>
+          </Menu>
+        ) : (
+          <Button
+            onClick={() => loginWithRedirect()}
+            bgColor="orange.600"
+            color="white"
+            _hover={{ bgColor: 'orange.700' }}
+            mr={4}
+            h="32px"
+            borderRadius="0"
+            fontSize="14px"
+          >
+            Log In
+          </Button>
+        )}
       </Flex>
 
       {/* DRAFF BODY */}
