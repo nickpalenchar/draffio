@@ -6,6 +6,7 @@ import {
   Image,
   Text,
   Tooltip,
+  Button,
 } from '@chakra-ui/react';
 import { javascript } from '@codemirror/lang-javascript';
 import { Prec } from '@codemirror/state';
@@ -64,18 +65,28 @@ export const Draff = () => {
     codeFile: draffName,
   });
 
-  const { user, isAuthenticated, isLoading } = useAuth0();
+  const { 
+    user,
+    isAuthenticated,
+    isLoading,
+    loginWithRedirect,
+    error: authError,
+    getAccessTokenSilently,
+    logout,
+  } = useAuth0();
   
   // Log authentication state
   useEffect(() => {
     if (isLoading) {
       console.log('Checking authentication status...');
+    } else if (authError) {
+      console.error('Auth error:', authError);
     } else if (isAuthenticated && user) {
       console.log('User is authenticated:', user);
     } else {
       console.log('User is not authenticated (anonymous)');
     }
-  }, [isAuthenticated, isLoading, user]);
+  }, [isAuthenticated, isLoading, user, authError]);
 
   useEffect(() => {
     if (!code || !editorRef?.current || editor || error) {
@@ -203,6 +214,21 @@ export const Draff = () => {
     setIsSaving(false);
   };
 
+  // Example of using the token for API calls
+  const callSecureApi = async () => {
+    try {
+      const token = await getAccessTokenSilently();
+      const response = await fetch('your-api-endpoint', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      // ... handle response
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   return (
     <Box maxHeight="100vh" bgColor="yellow.50">
       <Flex
@@ -211,43 +237,62 @@ export const Draff = () => {
         borderBottomWidth="1px"
         verticalAlign={'center'}
         maxH="4em"
+        justifyContent="space-between"
+        alignItems="center"
       >
-        <Tooltip label="Giraffe icons created by Freepik - Flaticon">
-          <Image
-            src={process.env.PUBLIC_URL + '/draff-logo.webp'}
-            height="2.8em"
-            marginTop={2}
-            marginLeft="1em"
-          />
-        </Tooltip>
-        <Code background="transparent" p={4} fontSize="17px">
-          <Text as="span" color="orange.600" fontWeight={'bold'}>
-            {prefix + username}
-          </Text>
-          <Text as="span" fontWeight={'bold'} color="yellow.800">
-            /{draffName}
-          </Text>
-        </Code>
-        <Box p={4} paddingLeft={0} fontSize="17px">
-          {error === 'Not Found!' && (
-            <Text as="span" color="white">
-              <Highlight
-                query="404"
-                styles={{
-                  px: '2',
-                  py: '1',
-                  rounded: 'full',
-                  bg: 'red.600',
-                  color: 'gray.100',
-                  fontFamily: 'monospace',
-                  fontWeight: 'bold',
-                }}
-              >
-                404
-              </Highlight>
+        <Flex alignItems="center">
+          <Tooltip label="Giraffe icons created by Freepik - Flaticon">
+            <Image
+              src={process.env.PUBLIC_URL + '/draff-logo.webp'}
+              height="2.8em"
+              marginTop={2}
+              marginLeft="1em"
+            />
+          </Tooltip>
+          <Code background="transparent" p={4} fontSize="17px">
+            <Text as="span" color="orange.600" fontWeight={'bold'}>
+              {prefix + username}
             </Text>
-          )}
-        </Box>
+            <Text as="span" fontWeight={'bold'} color="yellow.800">
+              /{draffName}
+            </Text>
+          </Code>
+          <Box p={4} paddingLeft={0} fontSize="17px">
+            {error === 'Not Found!' && (
+              <Text as="span" color="white">
+                <Highlight
+                  query="404"
+                  styles={{
+                    px: '2',
+                    py: '1',
+                    rounded: 'full',
+                    bg: 'red.600',
+                    color: 'gray.100',
+                    fontFamily: 'monospace',
+                    fontWeight: 'bold',
+                  }}
+                >
+                  404
+                </Highlight>
+              </Text>
+            )}
+          </Box>
+        </Flex>
+        
+        {!isAuthenticated && (
+          <Button
+            onClick={() => loginWithRedirect()}
+            bgColor="orange.600"
+            color="white"
+            _hover={{ bgColor: 'orange.700' }}
+            mr={4}
+            h="32px"
+            borderRadius="0"
+            fontSize="14px"
+          >
+            Log In
+          </Button>
+        )}
       </Flex>
 
       {/* DRAFF BODY */}
