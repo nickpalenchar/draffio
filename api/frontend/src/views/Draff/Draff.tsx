@@ -289,12 +289,14 @@ export const Draff = () => {
             <MenuButton>
               <Avatar
                 src={user?.picture}
-                size="md"
+                size="sm"
                 mr={4}
                 cursor="pointer"
                 borderRadius="full"
                 border="2px solid"
                 borderColor="orange.300"
+                width="32px"
+                height="32px"
               />
             </MenuButton>
             <MenuList
