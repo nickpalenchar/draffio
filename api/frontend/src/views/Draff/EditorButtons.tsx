@@ -30,16 +30,20 @@ interface EditorButtonProps {
   onRun: MouseEventHandler<HTMLButtonElement>;
   onSave: MouseEventHandler<HTMLButtonElement>;
   disable: boolean;
+  disableReason?: string;
   isSaving: boolean;
   shareUrl: string;
+  isAuthenticated: boolean;
 }
 
 export const EditorButtons: FC<EditorButtonProps> = ({
   onRun,
   onSave,
   disable = false,
+  disableReason,
   isSaving = false,
   shareUrl,
+  isAuthenticated,
 }) => {
   const shareLinkInputRef = useRef<HTMLInputElement>(null);
   const toast = useToast();
@@ -114,20 +118,39 @@ export const EditorButtons: FC<EditorButtonProps> = ({
             </PopoverBody>
           </PopoverContent>
         </Popover>
-        <Button
-          margin={2}
-          size="sm"
-          minW="7em"
-          borderRadius={0}
-          colorScheme="orange"
-          rightIcon={<FaSave />}
-          loadingText="Saving"
-          isDisabled={isSaving}
-          isLoading={isSaving}
-          onClick={onSave}
-        >
-          Save
-        </Button>
+        {disable ? (
+          <Tooltip label={disableReason}>
+            <Button
+              margin={2}
+              size="sm"
+              minW="7em"
+              borderRadius={0}
+              colorScheme="orange"
+              rightIcon={<FaSave />}
+              loadingText="Saving"
+              isDisabled={disable}
+              isLoading={isSaving}
+              onClick={onSave}
+            >
+              Save
+            </Button>
+          </Tooltip>
+        ) : (
+          <Button
+            margin={2}
+            size="sm"
+            minW="7em"
+            borderRadius={0}
+            colorScheme="orange"
+            rightIcon={<FaSave />}
+            loadingText="Saving"
+            isDisabled={disable}
+            isLoading={isSaving}
+            onClick={onSave}
+          >
+            Save
+          </Button>
+        )}
         <Button
           margin={2}
           size="sm"
