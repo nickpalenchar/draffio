@@ -368,7 +368,9 @@ export const Draff = () => {
             onSave={onSave}
             isSaving={isSaving}
             shareUrl={shareUrl}
-            disable={loading || !!error}
+            disable={loading || !!error || !isAuthenticated}
+            disableReason={!isAuthenticated ? "Login first" : undefined}
+            isAuthenticated={isAuthenticated}
           />
           <Box bg="yellow.100" maxH={{ base: '60vh', md: '100%' }}>
             {error === 'Not Found!' && <DraffNotFoundError />}

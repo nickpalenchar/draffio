@@ -1,7 +1,7 @@
 import React from 'react';
 import { ChakraProvider } from '@chakra-ui/react';
 import { Auth0Provider } from '@auth0/auth0-react';
-import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import { RouterProvider, createBrowserRouter, Navigate } from 'react-router-dom';
 import { Draff } from './views/Draff';
 import { extendBaseTheme, theme as chakraTheme } from '@chakra-ui/react';
 
@@ -25,7 +25,7 @@ const theme = extendBaseTheme({
 const router = createBrowserRouter([
   {
     path: '/',
-    element: <Draff />,
+    element: <Navigate to="/js/new" replace />,
   },
   {
     path: 'js/new',
