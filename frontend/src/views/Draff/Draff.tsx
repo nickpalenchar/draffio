@@ -61,11 +61,11 @@ export const Draff = () => {
 
   // Save button
   const [isSaving, setIsSaving] = useState(false);
-  const { saveCode } = useSaveCode();
+  const { saveCode, loading } = useSaveCode();
 
   const prefix = username.startsWith('@') ? '' : '/';
 
-  const { code, error, loading } = useGetCode({
+  const { code, error } = useGetCode({
     username,
     codeFile: draffName,
   });
@@ -205,18 +205,25 @@ export const Draff = () => {
       console.log('no editor!');
       return;
     }
-    setIsSaving(true);
-    const { username, draffName } = await saveCode({
-      username: 'tmp',
-      code: editor.state.doc.toString(),
-    });
+    
+    try {
+      setIsSaving(true);
+      const { username, draffName } = await saveCode({
+        code: editor.state.doc.toString(),
+      });
 
-    const newUrl = `/${username}/${draffName}`;
-    window.history.pushState({ path: newUrl }, '', newUrl);
-    setShareUrl(`${window.location.origin}${newUrl}`);
-    setUsername(username);
-    setDraffName(draffName);
-    setIsSaving(false);
+      // Update URL and state
+      const newUrl = `/${username}/${draffName}`;
+      window.history.pushState({ path: newUrl }, '', newUrl);
+      setShareUrl(`${window.location.origin}${newUrl}`);
+      setUsername(username);  // Will now include @ prefix
+      setDraffName(draffName);
+    } catch (error) {
+      console.error('Failed to save:', error);
+      // You might want to show an error toast here
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   // Example of using the token for API calls

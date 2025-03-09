@@ -53,10 +53,9 @@ draffRouter.post('/', async (req, res, next) => {
       });
     }
 
-    // User is guaranteed to exist due to authMiddleware
     const authorId = req.user!.userId;
+    const username = req.user!.username;  // Get username from auth middleware
 
-    // Generate title if not provided
     const title = providedTitle || await generateUniqueTitle(authorId);
 
     const draff = await Draff.create({
@@ -67,7 +66,11 @@ draffRouter.post('/', async (req, res, next) => {
       title,
     }).go();
 
-    res.status(201).json(draff.data);
+    // Include username in response
+    res.status(201).json({
+      ...draff.data,
+      username
+    });
   } catch (error) {
     next(error);
   }
