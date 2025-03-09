@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { auth } from 'express-oauth2-jwt-bearer';
 import { authMiddleware } from '../../middleware/auth';
+import draffRouter from './draff';
 
 const jwtCheck = auth({
   audience: 'draffio',
@@ -30,7 +31,7 @@ v1Router.use((req, res, next) => {
   next();
 });
 
-v1Router.use(jwtCheck);
+// v1Router.use(jwtCheck);
 
 v1Router.use(authMiddleware);
 
@@ -48,6 +49,7 @@ v1Router.get('/user/self', (req, res) => {
 // Mount other routes
 // v1Router.use('/users', userRoutes);
 // v1Router.use('/code', codeRoutes);
+v1Router.use('/draffs', draffRouter);
 
 // Error handling middleware should be last
 v1Router.use((err: any, req: any, res: any, next: any) => {

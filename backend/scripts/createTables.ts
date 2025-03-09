@@ -10,6 +10,8 @@ async function createTables() {
         { AttributeName: "sk", AttributeType: "S" },
         { AttributeName: "gs1pk", AttributeType: "S" },
         { AttributeName: "gs1sk", AttributeType: "S" },
+        { AttributeName: "gs2pk", AttributeType: "S" },
+        { AttributeName: "gs2sk", AttributeType: "S" },
       ],
       KeySchema: [
         { AttributeName: "pk", KeyType: "HASH" },
@@ -21,6 +23,18 @@ async function createTables() {
           KeySchema: [
             { AttributeName: "gs1pk", KeyType: "HASH" },
             { AttributeName: "gs1sk", KeyType: "RANGE" }
+          ],
+          Projection: { ProjectionType: "ALL" },
+          ProvisionedThroughput: {
+            ReadCapacityUnits: 5,
+            WriteCapacityUnits: 5
+          }
+        },
+        {
+          IndexName: "gs2",
+          KeySchema: [
+            { AttributeName: "gs2pk", KeyType: "HASH" },
+            { AttributeName: "gs2sk", KeyType: "RANGE" }
           ],
           Projection: { ProjectionType: "ALL" },
           ProvisionedThroughput: {

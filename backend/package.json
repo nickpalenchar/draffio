@@ -10,7 +10,8 @@
     "test:watch": "jest --watch",
     "dynamo:up": "docker-compose up -d",
     "dynamo:down": "docker-compose down",
-    "dynamo:create-tables": "ts-node scripts/createTables.ts"
+    "dynamo:create-tables": "ts-node scripts/createTables.ts",
+    "dynamo:drop-table": "ts-node scripts/dropTable.ts"
   },
   "dependencies": {
     "@aws-sdk/client-dynamodb": "^3.758.0",

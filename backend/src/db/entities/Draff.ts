@@ -1,29 +1,34 @@
 import { Entity } from "electrodb";
 import { electroConfig } from "../index";
 
-export const User = new Entity(
+export const Draff = new Entity(
   {
     model: {
-      entity: "user",
+      entity: "draff",
       version: "1",
       service: "draff",
     },
     attributes: {
-      userId: {
+      draffId: {
         type: "string",
         required: true,
       },
-      auth0Id: {
+      authorId: {
         type: "string",
         required: true,
       },
-      username: {
-        type: "string",
-        required: true,
-      },
-      name: {
+      title: {
         type: "string",
         required: false,
+      },
+      code: {
+        type: "string",
+        required: true,
+      },
+      language: {
+        type: "string",
+        required: true,
+        default: "javascript"
       },
       createdAt: {
         type: "number",
@@ -41,33 +46,22 @@ export const User = new Entity(
       primary: {
         pk: {
           field: "pk",
-          composite: ["userId"],
+          composite: ["draffId"],
         },
         sk: {
           field: "sk",
-          composite: ["userId"],
+          composite: ["draffId"],
         },
       },
-      byAuth0: {
+      byAuthor: {
         index: "gs1",
         pk: {
           field: "gs1pk",
-          composite: ["auth0Id"],
+          composite: ["authorId"],
         },
         sk: {
           field: "gs1sk",
-          composite: ["auth0Id"],
-        },
-      },
-      byUsername: {
-        index: "gs2",
-        pk: {
-          field: "gs2pk",
-          composite: ["username"],
-        },
-        sk: {
-          field: "gs2sk",
-          composite: ["username"],
+          composite: ["createdAt"],
         },
       },
     },
