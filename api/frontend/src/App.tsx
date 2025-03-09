@@ -4,6 +4,7 @@ import { Auth0Provider } from '@auth0/auth0-react';
 import { RouterProvider, createBrowserRouter, Navigate } from 'react-router-dom';
 import { Draff } from './views/Draff';
 import { extendBaseTheme, theme as chakraTheme } from '@chakra-ui/react';
+import { Auth0CallbackHandler } from './components/Auth0CallbackHandler';
 
 const { Button, Tabs, Input, Container, Card, Modal, Heading, Alert, Tag } =
   chakraTheme.components;
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
     path: '/:username/:codeFile',
     element: <Draff />,
   },
+  {
+    path: '/callback',
+    element: <Auth0CallbackHandler />,
+  }
 ]);
 
 function App() {
@@ -44,7 +49,7 @@ function App() {
         domain={process.env.REACT_APP_AUTH0_DOMAIN || ''}
         clientId={process.env.REACT_APP_AUTH0_CLIENT_ID || ''}
         authorizationParams={{
-          redirect_uri: window.location.origin,
+          redirect_uri: window.location.origin + '/callback',
           scope: "openid profile email",
           response_type: "code",
           response_mode: "query"
