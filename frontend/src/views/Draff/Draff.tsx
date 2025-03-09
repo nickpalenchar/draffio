@@ -208,8 +208,11 @@ export const Draff = () => {
     
     try {
       setIsSaving(true);
+      const existingDraff = username !== 'dev/null' ? { username, title } : undefined;
+      
       const { username: newUsername, draffName: newTitle } = await saveCode({
         code: editor.state.doc.toString(),
+        existingDraff
       });
 
       // Update URL and state with d/ prefix
@@ -220,7 +223,6 @@ export const Draff = () => {
       setTitle(newTitle);
     } catch (error) {
       console.error('Failed to save:', error);
-      // You might want to show an error toast here
     } finally {
       setIsSaving(false);
     }

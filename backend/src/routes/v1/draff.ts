@@ -117,4 +117,65 @@ draffRouter.get('/:username/:title', async (req, res, next) => {
   }
 });
 
+draffRouter.put('/:username/:title', async (req, res, next) => {
+  try {
+    const { username, title } = req.params;
+    const { code, language } = req.body;
+    const normalizedUsername = username.startsWith('@') ? username.slice(1) : username;
+
+    // First find the user by username
+    const users = await User.query
+      .byUsername({ username: normalizedUsername })
+      .go();
+
+    if (users.data.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'User not found'
+      });
+    }
+
+    // Verify the logged-in user owns this draff
+    if (users.data[0].userId !== req.user!.userId) {
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: 'You can only edit your own draffs'
+      });
+    }
+
+    // Find and update the draff
+    const draffs = await Draff.query
+      .byAuthor({ authorId: users.data[0].userId })
+      .go();
+
+    const draff = draffs.data.find(d => d.title === title);
+
+    if (!draff) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Draff not found'
+      });
+    }
+
+    // Update the draff
+    console.log('updating with code', code);
+    const updated = await Draff.update({
+      draffId: draff.draffId
+    })
+    .set({
+      code,
+      language: language || draff.language,
+    })
+    .go();
+
+    res.json({
+      ...updated.data,
+      username: normalizedUsername,
+      title: draff.title
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default draffRouter; 
