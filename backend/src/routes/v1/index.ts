@@ -24,9 +24,21 @@ v1Router.get('/healthz', (req, res) => {
 
 // PRIVATE ROUTES
 
+v1Router.use((req, res, next) => {
+  console.log('got to private', req.body);
+  next();
+});
+
 v1Router.use(jwtCheck);
 
 v1Router.get('/authorized', (req, res) => {
+  console.log(req.body);
+  res.json({
+    message: 'Hello from a private endpoint! You need to be authenticated to see this.'
+  });
+});
+
+v1Router.get('/user/self', (req, res) => {
   res.json({
     message: 'Hello from a private endpoint! You need to be authenticated to see this.'
   });
