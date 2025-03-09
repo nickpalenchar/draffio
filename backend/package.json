@@ -7,10 +7,17 @@
     "start": "node dist/index.js",
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "dynamo:up": "docker-compose up -d",
+    "dynamo:down": "docker-compose down",
+    "dynamo:create-tables": "ts-node scripts/createTables.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.758.0",
+    "@aws-sdk/lib-dynamodb": "^3.758.0",
+    "@paralleldrive/cuid2": "^2.2.2",
     "cors": "^2.8.5",
+    "electrodb": "^3.4.1",
     "express": "^4.18.2",
     "express-oauth2-jwt-bearer": "^1.6.0"
   },

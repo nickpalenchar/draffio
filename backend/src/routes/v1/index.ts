@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import { auth } from 'express-oauth2-jwt-bearer';
+import { authMiddleware } from '../../middleware/auth';
 
 const jwtCheck = auth({
   audience: 'draffio',
@@ -31,6 +32,8 @@ v1Router.use((req, res, next) => {
 
 v1Router.use(jwtCheck);
 
+v1Router.use(authMiddleware);
+
 v1Router.get('/authorized', (req, res) => {
   console.log(req.body);
   res.json({
@@ -39,9 +42,7 @@ v1Router.get('/authorized', (req, res) => {
 });
 
 v1Router.get('/user/self', (req, res) => {
-  res.json({
-    message: 'Hello from a private endpoint! You need to be authenticated to see this.'
-  });
+  res.json(req.user);
 });
 
 // Mount other routes
