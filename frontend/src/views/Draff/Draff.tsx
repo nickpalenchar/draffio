@@ -56,7 +56,7 @@ export const Draff = () => {
   const [editor, setEditor] = useState<EditorView | null>(null);
   const params = useParams();
   const [username, setUsername] = useState(params.username ?? 'dev/null');
-  const [draffName, setDraffName] = useState(params.codeFile ?? 'untitled');
+  const [title, setTitle] = useState(params.title ?? 'untitled');
   const [shareUrl, setShareUrl] = useState(window.location.href);
 
   // Save button
@@ -67,7 +67,7 @@ export const Draff = () => {
 
   const { code, error } = useGetCode({
     username,
-    codeFile: draffName,
+    title,
   });
 
   const { 
@@ -208,16 +208,16 @@ export const Draff = () => {
     
     try {
       setIsSaving(true);
-      const { username, draffName } = await saveCode({
+      const { username: newUsername, draffName: newTitle } = await saveCode({
         code: editor.state.doc.toString(),
       });
 
-      // Update URL and state
-      const newUrl = `/${username}/${draffName}`;
+      // Update URL and state with d/ prefix
+      const newUrl = `/d/${newUsername}/${newTitle}`;
       window.history.pushState({ path: newUrl }, '', newUrl);
       setShareUrl(`${window.location.origin}${newUrl}`);
-      setUsername(username);  // Will now include @ prefix
-      setDraffName(draffName);
+      setUsername(newUsername);
+      setTitle(newTitle);
     } catch (error) {
       console.error('Failed to save:', error);
       // You might want to show an error toast here
@@ -266,7 +266,7 @@ export const Draff = () => {
               {prefix + username}
             </Text>
             <Text as="span" fontWeight={'bold'} color="yellow.800">
-              /{draffName}
+              /{title}
             </Text>
           </Code>
           <Box p={4} paddingLeft={0} fontSize="17px">

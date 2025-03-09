@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { createId } from '@paralleldrive/cuid2';
 import { Draff } from '../../db/entities/Draff';
+import { User } from '../../db/entities/User';
 
 const draffRouter = Router();
 
@@ -71,6 +72,46 @@ draffRouter.post('/', async (req, res, next) => {
       ...draff.data,
       username
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+draffRouter.get('/:username/:title', async (req, res, next) => {
+  try {
+    const { username, title } = req.params;
+    console.log('username', username);
+    console.log('title', title);  
+    const normalizedUsername = username.startsWith('@') ? username.slice(1) : username;
+    // First find the user by username
+    const users = await User.query
+      .byUsername({ username: normalizedUsername })
+      .go();
+
+    if (users.data.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'User not found'
+      });
+    }
+
+    const authorId = users.data[0].userId;
+
+    // Then find their draff with matching title
+    const draffs = await Draff.query
+      .byAuthor({ authorId })
+      .go();
+
+    const draff = draffs.data.find(d => d.title === title);
+
+    if (!draff) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Draff not found'
+      });
+    }
+
+    res.json(draff);
   } catch (error) {
     next(error);
   }

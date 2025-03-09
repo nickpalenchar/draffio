@@ -34,7 +34,7 @@ const router = createBrowserRouter([
     element: <Draff />,
   },
   {
-    path: '/:username/:codeFile',
+    path: 'd/:username/:title',
     element: <Draff />,
   },
   {
