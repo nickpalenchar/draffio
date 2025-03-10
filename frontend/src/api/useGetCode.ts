@@ -1,61 +1,54 @@
-import { useEffect, useState } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
+import { apiClient } from '../services/api';
+import { useState, useEffect } from 'react';
 
-interface UseGetCadeParams {
+interface UseGetCodeParams {
   username: string;
-  codeFile: string;
+  title: string;
 }
 
-export const useGetCode: ({ username, codeFile }: UseGetCadeParams) => {
-  code: string;
-  error: string;
-  loading: boolean;
-} = ({ username, codeFile }) => {
+export const useGetCode = ({ username, title }: UseGetCodeParams) => {
   const [code, setCode] = useState(' ');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
+  const { getAccessTokenSilently } = useAuth0();
 
   useEffect(() => {
-    if (error || !loading) {
-      return;
-    }
-    if (username !== 'dev/null') {
-      fetch(
-        `${process.env.REACT_APP_API_GW}/code/${username}/${codeFile}`,
-      ).then(async (res: any) => {
-        if (res.status === 404) {
-          setLoading(false);
-          return setError('Not Found!');
-        }
-        if (res.status !== 200) {
-          console.error('error', { res });
-          return setError(res.body ?? 'An error occurred');
-        }
-        const data = await res.json();
-        const code = data.text;
-        if (!code) {
-          setLoading(false);
-          return setError('Problem with fetching the Draff');
-        }
-        setCode(code);
+    const fetchCode = async () => {
+      if (error || !loading) {
+        return;
+      }
+
+      if (username === 'dev/null') {
         setLoading(false);
-      });
-    } else {
-      setLoading(false);
-      setError('');
-      setCode('// Your code here...');
-    }
-  }, [username, codeFile, error, loading]);
+        setError('');
+        setCode('// Your code here...');
+        return;
+      }
 
-  if (loading) {
-    return { code: '  ', error: '', loading: true };
-  }
-  if (error) {
-    return { code: ' ', error, loading: false };
-  }
+      try {
+        const token = await getAccessTokenSilently();
+        const response = await apiClient.get(`/v1/draffs/${username}/${title}`, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        
+        setCode(response.data.code);
+        setLoading(false);
+      } catch (err: any) {
+        if (err.response?.status === 404) {
+          setError('Not Found!');
+        } else {
+          setError('An error occurred');
+          console.error('Error fetching code:', err);
+        }
+        setLoading(false);
+      }
+    };
 
-  if (username === 'dev/null') {
-    return { code, error: '', loading: false };
-  }
-  // return {code: '', error: '', loading: true}
-  return { code, error, loading: false };
+    fetchCode();
+  }, [username, title, error, loading, getAccessTokenSilently]);
+
+  return { code, error, loading };
 };

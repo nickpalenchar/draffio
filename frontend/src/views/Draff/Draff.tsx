@@ -12,14 +12,16 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
+  Editable,
+  EditableInput,
+  EditablePreview,
 } from '@chakra-ui/react';
 import { javascript } from '@codemirror/lang-javascript';
 import { Prec } from '@codemirror/state';
 import { keymap } from '@codemirror/view';
 import { EditorView, basicSetup } from 'codemirror';
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigation, useParams } from 'react-router-dom';
-import { generateCodeLoad } from '../../api/_codeLoadSequence';
+import { useParams } from 'react-router-dom';
 import { useGetCode } from '../../api/useGetCode';
 import { useSaveCode } from '../../api/useSaveCode';
 import { Editor } from '../../components/Editor';
@@ -35,6 +37,7 @@ import { DraffNotFoundError } from './DraffNotFoundError';
 import { EditorButtons } from './EditorButtons';
 import { TerminalButtons } from './TerminalButtons';
 import { useAuth0 } from '@auth0/auth0-react';
+import { apiClient } from '../../services/api';
 
 const defaultLines = [
   ...`       ,"-.
@@ -50,24 +53,29 @@ const defaultLines = [
 
 const timeouts: Record<number, number> = {};
 
+const sanitizeTitle = (input: string) => {
+  const sanitized = input.replace(/[^a-zA-Z0-9._-]/g, '');
+  return sanitized.slice(0, 65); // Limit to 65 characters
+};
+
 export const Draff = () => {
   const editorRef = useRef<HTMLDivElement>(null);
   const [termLines, setTermLines] = useState(defaultLines);
   const [editor, setEditor] = useState<EditorView | null>(null);
   const params = useParams();
   const [username, setUsername] = useState(params.username ?? 'dev/null');
-  const [draffName, setDraffName] = useState(params.codeFile ?? 'untitled');
+  const [title, setTitle] = useState(params.title ?? 'untitled');
   const [shareUrl, setShareUrl] = useState(window.location.href);
 
   // Save button
   const [isSaving, setIsSaving] = useState(false);
-  const { saveCode } = useSaveCode();
+  const { saveCode, loading } = useSaveCode();
 
   const prefix = username.startsWith('@') ? '' : '/';
 
-  const { code, error, loading } = useGetCode({
+  const { code, error } = useGetCode({
     username,
-    codeFile: draffName,
+    title,
   });
 
   const { 
@@ -122,29 +130,6 @@ export const Draff = () => {
     return () => editorView.destroy();
   }, [editorRef, error]);
 
-  useEffect(() => {
-    if (!editor || error) {
-      return;
-    }
-    let interval: ReturnType<typeof setInterval>;
-    let weight = 1000;
-    if (loading) {
-      interval = setInterval(
-        () =>
-          editor.dispatch({
-            changes: {
-              from: 0,
-              to: editor.state.doc.length,
-              insert: generateCodeLoad(weight),
-            },
-          }),
-        100,
-      );
-    }
-    return () => {
-      clearInterval(interval);
-    };
-  }, [loading, editor]);
 
   useEffect(() => {
     if (!editor || !code) {
@@ -205,32 +190,61 @@ export const Draff = () => {
       console.log('no editor!');
       return;
     }
-    setIsSaving(true);
-    const { username, draffName } = await saveCode({
-      username: 'tmp',
-      code: editor.state.doc.toString(),
-    });
+    
+    try {
+      setIsSaving(true);
+      const existingDraff = username !== 'dev/null' ? { username, title } : undefined;
+      const { username: newUsername, draffName: newTitle } = await saveCode({
+        code: editor.state.doc.toString(),
+        existingDraff
+      });
 
-    const newUrl = `/${username}/${draffName}`;
-    window.history.pushState({ path: newUrl }, '', newUrl);
-    setShareUrl(`${window.location.origin}${newUrl}`);
-    setUsername(username);
-    setDraffName(draffName);
-    setIsSaving(false);
+      const newUrl = `/d/${newUsername}/${newTitle}`;
+      window.history.pushState({ path: newUrl }, '', newUrl);
+      setShareUrl(`${window.location.origin}${newUrl}`);
+      setUsername(newUsername);
+      setTitle(newTitle);
+      setIsSaving(false);
+    } catch (error) {
+      console.error('Failed to save:', error);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  // Example of using the token for API calls
-  const callSecureApi = async () => {
+  const [editableTitle, setEditableTitle] = useState(title);
+
+  useEffect(() => {
+    setEditableTitle(title);
+  }, [title]);
+
+  const onTitleChange = async (newTitle: string) => {
+    console.log('onTitleChange', newTitle);
+    if (!isAuthenticated || username === 'dev/null' || newTitle === title) {
+      return;
+    }
+
     try {
       const token = await getAccessTokenSilently();
-      const response = await fetch('your-api-endpoint', {
-        headers: {
-          Authorization: `Bearer ${token}`
+      const response = await apiClient.patch(
+        `/v1/draffs/${username}/${title}/rename`,
+        { newTitle },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
-      });
-      // ... handle response
-    } catch (error) {
-      console.error(error);
+      );
+
+      const newUrl = `/d/${username}/${response.data.title}`;
+      window.history.pushState({ path: newUrl }, '', newUrl);
+      setShareUrl(`${window.location.origin}${newUrl}`);
+      setTitle(response.data.title);
+    } catch (error: any) {
+      console.error('Failed to rename:', error);
+      if (error.response?.status === 409) {
+        setEditableTitle(title); // Reset to original title
+      }
     }
   };
 
@@ -258,9 +272,50 @@ export const Draff = () => {
             <Text as="span" color="orange.600" fontWeight={'bold'}>
               {prefix + username}
             </Text>
-            <Text as="span" fontWeight={'bold'} color="yellow.800">
-              /{draffName}
-            </Text>
+            {username !== 'dev/null' ? (
+              <>
+                <Text as="span" fontWeight={'bold'} color="yellow.800">
+                  /
+                </Text>
+                <Editable
+                  value={editableTitle}
+                  onChange={(value) => setEditableTitle(sanitizeTitle(value))}
+                  onSubmit={onTitleChange}
+                  onCancel={() => setEditableTitle(title)}
+                  display="inline"
+                  color="yellow.800"
+                  fontWeight="bold"
+                  submitOnBlur={true}
+                  startWithEditView={false}
+                  _hover={{ 
+                    cursor: 'pointer',
+                    textDecoration: 'underline' 
+                  }}
+                >
+                  <EditablePreview />
+                  <EditableInput 
+                    width="auto"
+                    minWidth="100px"
+                    background="yellow.50"
+                    border="1px"
+                    borderColor="orange.300"
+                    _focus={{
+                      background: "white",
+                      boxShadow: "outline"
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.currentTarget.blur();
+                      }
+                    }}
+                  />
+                </Editable>
+              </>
+            ) : (
+              <Text as="span" fontWeight={'bold'} color="yellow.800">
+                /{title}
+              </Text>
+            )}
           </Code>
           <Box p={4} paddingLeft={0} fontSize="17px">
             {error === 'Not Found!' && (
@@ -303,6 +358,7 @@ export const Draff = () => {
               bg="yellow.50"
               borderColor="orange.300"
               boxShadow="md"
+              zIndex={2}
             >
               <MenuItem
                 py={3}
@@ -314,7 +370,7 @@ export const Draff = () => {
                     {user?.email}
                   </Text>
                   <Text fontSize="sm" color="gray.600">
-                    {user?.nickname || 'Anonymous Giraffe'}
+                    {user?.name || 'Anonymous Giraffe'}
                   </Text>
                 </Box>
               </MenuItem>

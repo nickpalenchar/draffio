@@ -1,48 +1,75 @@
 import React, { useState, useCallback } from 'react';
+import { useAuth0 } from '@auth0/auth0-react';
+import { apiClient } from '../services/api';
 
 interface SaveCodeParams {
   code: string;
-  username: string;
+  existingDraff?: {
+    username: string;
+    title: string;
+  };
 }
+
 interface SaveCodeReturn {
-  isLoading: boolean;
+  loading: boolean;
   error: string | null;
-  saveCode: (
-    params: SaveCodeParams,
-  ) => Promise<{ username: string; draffName: string }>;
+  saveCode: (params: SaveCodeParams) => Promise<{ username: string; draffName: string }>;
 }
 
 export const useSaveCode = (): SaveCodeReturn => {
-  const [isLoading, setIsLoading] = useState(false);
+  const { getAccessTokenSilently } = useAuth0();
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const saveCode = useCallback<SaveCodeReturn['saveCode']>(
-    async ({ code, username }) => {
-      setIsLoading(true);
+    async ({ code, existingDraff }) => {
+      setLoading(true);
       setError(null);
-      const fetchUrl = `${process.env.REACT_APP_API_GW}code/${username}`;
-      return fetch(fetchUrl, {
-        method: 'post',
-        headers: {
-          'content-type': 'application/json',
-        },
-        mode: process.env.NODE_ENV === 'development' ? 'no-cors' : 'cors',
-        body: JSON.stringify({
-          code,
-        }),
-      }).then(async (res) => {
-        console.log('the result is ', res);
-        const body = await res.json();
-        console.log('BODY,', body); // {draffName: 'c25cc2f0dd705bb3cec07', username: 'tmp'}
-        if (!body.draffName || !body.username) {
-          console.error('Bad response from server');
-          throw new Error(`Could not save (500)`);
+      
+      try {
+        const token = await getAccessTokenSilently();
+
+        if (existingDraff) {
+          // Update existing draff
+          const response = await apiClient.put(
+            `/v1/draffs/${existingDraff.username}/${existingDraff.title}`,
+            { code },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            }
+          );
+
+          return {
+            username: `@${response.data.username}`,
+            draffName: response.data.title
+          };
+        } else {
+          // Create new draff
+          const response = await apiClient.post('/v1/draffs', 
+            { code },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`
+              }
+            }
+          );
+
+          return {
+            username: `@${response.data.username}`,
+            draffName: response.data.title
+          };
         }
-        return { draffName: body.draffName, username: body.username };
-      });
+      } catch (err) {
+        setError('Failed to save code');
+        throw err;
+      } finally {
+        setLoading(false);
+      }
     },
-    [],
+    [getAccessTokenSilently]
   );
 
-  return { isLoading, error, saveCode };
+  return { loading, error, saveCode };
 };

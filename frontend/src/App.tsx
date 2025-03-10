@@ -3,8 +3,10 @@ import { ChakraProvider } from '@chakra-ui/react';
 import { Auth0Provider } from '@auth0/auth0-react';
 import { RouterProvider, createBrowserRouter, Navigate } from 'react-router-dom';
 import { Draff } from './views/Draff';
+import { Profile } from './views/Profile/Profile';
 import { extendBaseTheme, theme as chakraTheme } from '@chakra-ui/react';
 import { Auth0CallbackHandler } from './components/Auth0CallbackHandler';
+import { Dashboard } from './views/Dashboard/Dashboard';
 
 const { Button, Tabs, Input, Container, Card, Modal, Heading, Alert, Tag } =
   chakraTheme.components;
@@ -33,12 +35,20 @@ const router = createBrowserRouter([
     element: <Draff />,
   },
   {
-    path: '/:username/:codeFile',
+    path: 'd/:username/:title',
     element: <Draff />,
+  },
+  {
+    path: '/dashboard',
+    element: <Dashboard />,
   },
   {
     path: '/callback',
     element: <Auth0CallbackHandler />,
+  },
+  {
+    path: '/profile',
+    element: <Profile />,
   }
 ]);
 
@@ -52,7 +62,8 @@ function App() {
           redirect_uri: window.location.origin + '/callback',
           scope: "openid profile email",
           response_type: "code",
-          response_mode: "query"
+          response_mode: "query",
+          audience: "draffio"
         }}
         onRedirectCallback={(appState) => {
           window.history.replaceState(
