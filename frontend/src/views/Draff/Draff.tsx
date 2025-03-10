@@ -122,29 +122,6 @@ export const Draff = () => {
     return () => editorView.destroy();
   }, [editorRef, error]);
 
-  useEffect(() => {
-    if (!editor || error) {
-      return;
-    }
-    let interval: ReturnType<typeof setInterval>;
-    let weight = 1000;
-    if (loading) {
-      interval = setInterval(
-        () =>
-          editor.dispatch({
-            changes: {
-              from: 0,
-              to: editor.state.doc.length,
-              insert: generateCodeLoad(weight),
-            },
-          }),
-        100,
-      );
-    }
-    return () => {
-      clearInterval(interval);
-    };
-  }, [loading, editor]);
 
   useEffect(() => {
     if (!editor || !code) {
@@ -209,37 +186,21 @@ export const Draff = () => {
     try {
       setIsSaving(true);
       const existingDraff = username !== 'dev/null' ? { username, title } : undefined;
-      
       const { username: newUsername, draffName: newTitle } = await saveCode({
         code: editor.state.doc.toString(),
         existingDraff
       });
 
-      // Update URL and state with d/ prefix
       const newUrl = `/d/${newUsername}/${newTitle}`;
       window.history.pushState({ path: newUrl }, '', newUrl);
       setShareUrl(`${window.location.origin}${newUrl}`);
       setUsername(newUsername);
       setTitle(newTitle);
+      setIsSaving(false);
     } catch (error) {
       console.error('Failed to save:', error);
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  // Example of using the token for API calls
-  const callSecureApi = async () => {
-    try {
-      const token = await getAccessTokenSilently();
-      const response = await fetch('your-api-endpoint', {
-        headers: {
-          Authorization: `Bearer ${token}`
-        }
-      });
-      // ... handle response
-    } catch (error) {
-      console.error(error);
     }
   };
 
@@ -323,7 +284,7 @@ export const Draff = () => {
                     {user?.email}
                   </Text>
                   <Text fontSize="sm" color="gray.600">
-                    {user?.nickname || 'Anonymous Giraffe'}
+                    {user?.name || 'Anonymous Giraffe'}
                   </Text>
                 </Box>
               </MenuItem>

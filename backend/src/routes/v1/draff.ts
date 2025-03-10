@@ -157,8 +157,6 @@ draffRouter.put('/:username/:title', async (req, res, next) => {
       });
     }
 
-    // Update the draff
-    console.log('updating with code', code);
     const updated = await Draff.update({
       draffId: draff.draffId
     })
@@ -178,4 +176,4 @@ draffRouter.put('/:username/:title', async (req, res, next) => {
   }
 });
 
-export default draffRouter; 
+export default draffRouter;
