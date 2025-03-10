@@ -105,7 +105,7 @@ export const EditorButtons: FC<EditorButtonProps> = ({
           <PopoverContent>
             <PopoverArrow />
             <PopoverCloseButton />
-            <PopoverBody>
+            <PopoverBody bg="yellow.50" zIndex={2} p={4} minW="380px">
               <div>Share link below 👇</div>
               <br />
               <InputGroup>
@@ -113,6 +113,10 @@ export const EditorButtons: FC<EditorButtonProps> = ({
                   value={shareUrl}
                   ref={shareLinkInputRef}
                   onClick={onShareLinkClick}
+                  fontFamily="monospace" 
+                  fontSize="xs"
+                  borderRadius={0}
+                  backgroundColor="gray.100"
                 ></Input>
               </InputGroup>
             </PopoverBody>
