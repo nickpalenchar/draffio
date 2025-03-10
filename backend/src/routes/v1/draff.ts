@@ -176,4 +176,89 @@ draffRouter.put('/:username/:title', async (req, res, next) => {
   }
 });
 
+draffRouter.patch('/:username/:title/rename', async (req, res, next) => {
+  try {
+    const { username, title } = req.params;
+    const { newTitle } = req.body;
+    const normalizedUsername = username.startsWith('@') ? username.slice(1) : username;
+
+    if (!newTitle) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'New title is required'
+      });
+    }
+
+    if (newTitle.length > 65) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Title cannot be longer than 65 characters'
+      });
+    }
+
+    // Validate title format
+    if (!/^[a-zA-Z0-9._-]+$/.test(newTitle)) {
+      return res.status(400).json({
+        error: 'Bad Request',
+        message: 'Title can only contain letters, numbers, dots, hyphens and underscores'
+      });
+    }
+
+    const users = await User.query
+      .byUsername({ username: normalizedUsername })
+      .go();
+
+    if (users.data.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'User not found'
+      });
+    }
+
+    if (users.data[0].userId !== req.user!.userId) {
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: 'You can only rename your own draffs'
+      });
+    }
+
+    const draffs = await Draff.query
+      .byAuthor({ authorId: users.data[0].userId })
+      .go();
+
+    const draff = draffs.data.find(d => d.title === title);
+
+    if (!draff) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Draff not found'
+      });
+    }
+
+    const titleExists = draffs.data.some(d => d.title === newTitle);
+    if (titleExists) {
+      return res.status(409).json({
+        error: 'Conflict',
+        message: 'A draff with this title already exists'
+      });
+    }
+
+    const updated = await Draff.update({
+      draffId: draff.draffId
+    })
+    .set({
+      title: newTitle
+    })
+    .go();
+
+    res.json({
+      ...updated.data,
+      username: normalizedUsername,
+      title: newTitle
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default draffRouter;

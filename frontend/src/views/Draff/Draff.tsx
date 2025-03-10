@@ -12,6 +12,9 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
+  Editable,
+  EditableInput,
+  EditablePreview,
 } from '@chakra-ui/react';
 import { javascript } from '@codemirror/lang-javascript';
 import { Prec } from '@codemirror/state';
@@ -35,6 +38,7 @@ import { DraffNotFoundError } from './DraffNotFoundError';
 import { EditorButtons } from './EditorButtons';
 import { TerminalButtons } from './TerminalButtons';
 import { useAuth0 } from '@auth0/auth0-react';
+import { apiClient } from '../../services/api';
 
 const defaultLines = [
   ...`       ,"-.
@@ -49,6 +53,11 @@ const defaultLines = [
 ];
 
 const timeouts: Record<number, number> = {};
+
+const sanitizeTitle = (input: string) => {
+  const sanitized = input.replace(/[^a-zA-Z0-9._-]/g, '');
+  return sanitized.slice(0, 65); // Limit to 65 characters
+};
 
 export const Draff = () => {
   const editorRef = useRef<HTMLDivElement>(null);
@@ -204,6 +213,42 @@ export const Draff = () => {
     }
   };
 
+  const [editableTitle, setEditableTitle] = useState(title);
+
+  useEffect(() => {
+    setEditableTitle(title);
+  }, [title]);
+
+  const onTitleChange = async (newTitle: string) => {
+    console.log('onTitleChange', newTitle);
+    if (!isAuthenticated || username === 'dev/null' || newTitle === title) {
+      return;
+    }
+
+    try {
+      const token = await getAccessTokenSilently();
+      const response = await apiClient.patch(
+        `/v1/draffs/${username}/${title}/rename`,
+        { newTitle },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+
+      const newUrl = `/d/${username}/${response.data.title}`;
+      window.history.pushState({ path: newUrl }, '', newUrl);
+      setShareUrl(`${window.location.origin}${newUrl}`);
+      setTitle(response.data.title);
+    } catch (error: any) {
+      console.error('Failed to rename:', error);
+      if (error.response?.status === 409) {
+        setEditableTitle(title); // Reset to original title
+      }
+    }
+  };
+
   return (
     <Box maxHeight="100vh" bgColor="yellow.50">
       <Flex
@@ -228,9 +273,50 @@ export const Draff = () => {
             <Text as="span" color="orange.600" fontWeight={'bold'}>
               {prefix + username}
             </Text>
-            <Text as="span" fontWeight={'bold'} color="yellow.800">
-              /{title}
-            </Text>
+            {username !== 'dev/null' ? (
+              <>
+                <Text as="span" fontWeight={'bold'} color="yellow.800">
+                  /
+                </Text>
+                <Editable
+                  value={editableTitle}
+                  onChange={(value) => setEditableTitle(sanitizeTitle(value))}
+                  onSubmit={onTitleChange}
+                  onCancel={() => setEditableTitle(title)}
+                  display="inline"
+                  color="yellow.800"
+                  fontWeight="bold"
+                  submitOnBlur={true}
+                  startWithEditView={false}
+                  _hover={{ 
+                    cursor: 'pointer',
+                    textDecoration: 'underline' 
+                  }}
+                >
+                  <EditablePreview />
+                  <EditableInput 
+                    width="auto"
+                    minWidth="100px"
+                    background="yellow.50"
+                    border="1px"
+                    borderColor="orange.300"
+                    _focus={{
+                      background: "white",
+                      boxShadow: "outline"
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.currentTarget.blur();
+                      }
+                    }}
+                  />
+                </Editable>
+              </>
+            ) : (
+              <Text as="span" fontWeight={'bold'} color="yellow.800">
+                /{title}
+              </Text>
+            )}
           </Code>
           <Box p={4} paddingLeft={0} fontSize="17px">
             {error === 'Not Found!' && (

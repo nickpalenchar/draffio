@@ -1,11 +1,8 @@
 import axios from 'axios';
-import { API_CONFIG } from '../config/api';
 
-const apiClient = axios.create({
-  baseURL: API_CONFIG.baseURL,
+export const apiClient = axios.create({
+  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:3001',
   headers: {
     'Content-Type': 'application/json'
   }
-});
-
-export { apiClient }; 
+}); 
