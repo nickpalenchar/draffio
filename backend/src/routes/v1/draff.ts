@@ -43,6 +43,31 @@ async function generateUniqueTitle(authorId: string): Promise<string> {
   return `tmp-${Date.now()}`;
 }
 
+draffRouter.get('/user/self', async (req, res, next) => {
+  console.log('draffRouter.get(/user/self)');
+  try {
+    const authorId = req.user!.userId;
+    const username = req.user!.username;
+
+    const draffs = await Draff.query
+      .byAuthor({ authorId })
+      .go();
+
+    const mappedDraffs = draffs.data
+      .map(draff => ({
+        title: draff.title,
+        language: draff.language,
+        updatedAt: draff.updatedAt,
+        author: username
+      }))
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+
+    res.json(mappedDraffs);
+  } catch (error) {
+    next(error);
+  }
+});
+
 draffRouter.post('/', async (req, res, next) => {
   try {
     const { code, language, title: providedTitle } = req.body as CreateDraffBody;
@@ -256,6 +281,52 @@ draffRouter.patch('/:username/:title/rename', async (req, res, next) => {
       username: normalizedUsername,
       title: newTitle
     });
+  } catch (error) {
+    next(error);
+  }
+});
+
+draffRouter.delete('/:username/:title', async (req, res, next) => {
+  try {
+    const { username, title } = req.params;
+    const normalizedUsername = username.startsWith('@') ? username.slice(1) : username;
+
+    const users = await User.query
+      .byUsername({ username: normalizedUsername })
+      .go();
+
+    if (users.data.length === 0) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'User not found'
+      });
+    }
+
+    if (users.data[0].userId !== req.user!.userId) {
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: 'You can only delete your own draffs'
+      });
+    }
+
+    const draffs = await Draff.query
+      .byAuthor({ authorId: users.data[0].userId })
+      .go();
+
+    const draff = draffs.data.find(d => d.title === title);
+
+    if (!draff) {
+      return res.status(404).json({
+        error: 'Not Found',
+        message: 'Draff not found'
+      });
+    }
+
+    await Draff.delete({
+      draffId: draff.draffId
+    }).go();
+
+    res.status(204).send();
   } catch (error) {
     next(error);
   }

@@ -6,6 +6,7 @@ import { Draff } from './views/Draff';
 import { Profile } from './views/Profile/Profile';
 import { extendBaseTheme, theme as chakraTheme } from '@chakra-ui/react';
 import { Auth0CallbackHandler } from './components/Auth0CallbackHandler';
+import { Dashboard } from './views/Dashboard/Dashboard';
 
 const { Button, Tabs, Input, Container, Card, Modal, Heading, Alert, Tag } =
   chakraTheme.components;
@@ -36,6 +37,10 @@ const router = createBrowserRouter([
   {
     path: 'd/:username/:title',
     element: <Draff />,
+  },
+  {
+    path: '/dashboard',
+    element: <Dashboard />,
   },
   {
     path: '/callback',

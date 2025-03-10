@@ -21,8 +21,7 @@ import { Prec } from '@codemirror/state';
 import { keymap } from '@codemirror/view';
 import { EditorView, basicSetup } from 'codemirror';
 import React, { useEffect, useRef, useState } from 'react';
-import { useNavigation, useParams } from 'react-router-dom';
-import { generateCodeLoad } from '../../api/_codeLoadSequence';
+import { useParams } from 'react-router-dom';
 import { useGetCode } from '../../api/useGetCode';
 import { useSaveCode } from '../../api/useSaveCode';
 import { Editor } from '../../components/Editor';
@@ -359,6 +358,7 @@ export const Draff = () => {
               bg="yellow.50"
               borderColor="orange.300"
               boxShadow="md"
+              zIndex={2}
             >
               <MenuItem
                 py={3}
